@@ -253,8 +253,8 @@ def main():
                                         values=[TARGET, NTargtAvg],
                                         aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
-        _p.bar(x=1500, height=10, width=10, color='black')
-        _p.bar(x=2700, height=10, width=10, color='black')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='--')
         # _p.legend([TARGET, NTargtAvg, 'qend: 1500', 'target: 2700'])
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
         _p.set_title("{}type {}, non target".format(args.title, t))
@@ -271,8 +271,8 @@ def main():
                                                                                        TARGET, NTargtAvg],
                                                                                    aggfunc=np.average)
     _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
-    _p.bar(x=1500, height=10, width=10, color='black')
-    _p.bar(x=2700, height=10, width=10, color='black')
+    _p.axvline(1500, color='black', linestyle=':')
+    _p.axvline(2700, color='black', linestyle='--')
     # _p.legend([TARGET, NTargtAvg, 'qend: 1500', 'target: 2700'])
     _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
     _p.set_title("{}type {}, non target".format(args.title, "A, Am, As"))
@@ -287,14 +287,25 @@ def main():
                                         values=[TARGET, COMP, FILLAvg],
                                         aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
-        _p.bar(x=1500, height=10, width=10, color='black')
-        _p.bar(x=2700, height=10, width=10, color='black')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='--')
         # _p.legend([TARGET, COMP, NTargtAvg, 'qend: 1500', 'target: 2700'])
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
         _p.set_title("{}type {}, filler average".format(args.title, t))
 
 
         pp.draw()
+
+    _d4 = _d3[(_d3[TYPE] == F) | (_d3[TYPE] == AF)].pivot_table(
+        index=[TIME],
+        values=[TARGET, NTargtAvg],
+        aggfunc=np.average)
+    _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
+    _p.axvline(1500, color='black', linestyle=':')
+    _p.axvline(2700, color='black', linestyle='--')
+    # _p.legend([TARGET, NTargtAvg, 'qend: 1500', 'target: 2700'])
+    _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
+    _p.set_title("{}type {}, non target".format(args.title, "AF, F"))
 
     # when we done drawing graphs
     pp.show()
