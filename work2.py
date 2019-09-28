@@ -204,12 +204,13 @@ def main():
     # move type from index to column
     _d = data_with_touch.reset_index(TYPE)
 
+    # assign two new columns of average of fillers and average of non target
     _d = _d.assign(**{
         NTargtAvg: (_d[COMP]+_d[FILL1]+_d[FILL2]) / 3,
         FILLAvg: (_d[FILL1]+_d[FILL2])/2
     })
 
-    # padd from touch point
+    # pad from touch point
     _d.loc[_d[TIME] >= _d['TOUCH_FIXED'], TARGET] = 10
     
     if args.outdata is not None:
@@ -217,95 +218,72 @@ def main():
 
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
     _d2 = _d[(_d[TIME] >= 200) & (_d[TIME] <= 3500)]
-    # # plot graphs
-    # for t in [B, C, D, E]:
-    #     _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
-    #                                   values=[TARGET, COMP, FILL1, FILL2],
-    #                                   aggfunc=np.average).\
-    #         plot().set_title("{}type {}".format(args.title, t))
-        
-
-
-    #     pp.draw()
-
-    # _d2[(_d2[TYPE] == A) | (_d2[TYPE] == Am) | (_d2[TYPE] == As)].pivot_table(index=[TIME],
-    #                               values=[TARGET, COMP, FILL1, FILL2],
-    #                               aggfunc=np.average).\
-    #     plot().set_title("{}type {}".format(args.title, "A, Am, As"))
-    # pp.draw()
-    
     # chop time for  AF, F  (from 200)
     _d3 = _d[(_d[TIME] >= 200)]
-    # # plot graphs
-    # for t in [F, AF]:
-    #     _d3[_d3[TYPE] == t].pivot_table(index=[TIME],
-    #                                   values=[TARGET, COMP, FILL1, FILL2],
-    #                                   aggfunc=np.average).\
-    #         plot().set_title("{}type {}".format(args.title, t))
-    #     pp.draw()
 
     for t in [B, D]:
-        # _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
-        #                                 values=[TARGET, NTargtAvg],
-        #                                 aggfunc=np.average).\
-        #     plot().set_title("{}type {}, non target".format(args.title, t))
         _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
                                         values=[TARGET, NTargtAvg],
                                         aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='--')
-        # _p.legend([TARGET, NTargtAvg, 'qend: 1500', 'target: 2700'])
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
         _p.set_title("{}type {}, non target".format(args.title, t))
-
         pp.draw()
 
-    # _d2[(_d2[TYPE] == A) | (_d2[TYPE] == Am) | (_d2[TYPE] == As)].pivot_table(index=[TIME],
-    #                               values=[TARGET, NTargtAvg],
-    #                               aggfunc=np.average).\
-    #     plot().set_title("{}type {}, non taget".format(args.title, "A, Am, As"))
-    # pp.draw()
-    _d4 = _d2[(_d2[TYPE] == A) | (_d2[TYPE] == Am) | (_d2[TYPE] == As)].pivot_table(index=[TIME],
-                                                                                   values=[
-                                                                                       TARGET, NTargtAvg],
-                                                                                   aggfunc=np.average)
-    _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
-    _p.axvline(1500, color='black', linestyle=':')
-    _p.axvline(2700, color='black', linestyle='--')
-    # _p.legend([TARGET, NTargtAvg, 'qend: 1500', 'target: 2700'])
-    _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
-    _p.set_title("{}type {}, non target".format(args.title, "A, Am, As"))
+    for t in [A, Am, As, 'A(all)']:
+        # draw A type plot
+        if t == 'A(all)':
+            CondTypeA = (_d2[TYPE] == A) | (_d2[TYPE] == Am) | (_d2[TYPE] == As)
+        else:
+            CondTypeA = (_d2[TYPE] == t)
+        _d4 = _d2[CondTypeA].pivot_table(index=[TIME],
+                                         values=[TARGET, NTargtAvg],
+                                         aggfunc=np.average)
+        _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
+        _p.axvline(2700, color='black', linestyle='--')
+        _p.legend(list(_d4.columns) + ['target: 2700'])
+        _p.set_title("{}type {}, non target".format(args.title, t))
+        pp.draw()
     
 
     for t in [C, E]:
-        # _d3[_d3[TYPE] == t].pivot_table(index=[TIME],
-        #                                 values=[TARGET, COMP, FILLAvg],
-        #                                 aggfunc=np.average).\
-        #     plot().set_title("{}type {},  Filler Avg".format(args.title, t))
         _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
                                         values=[TARGET, COMP, FILLAvg],
                                         aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='--')
-        # _p.legend([TARGET, COMP, NTargtAvg, 'qend: 1500', 'target: 2700'])
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
         _p.set_title("{}type {}, filler average".format(args.title, t))
-
-
         pp.draw()
 
-    _d4 = _d3[(_d3[TYPE] == F) | (_d3[TYPE] == AF)].pivot_table(
-        index=[TIME],
-        values=[TARGET, NTargtAvg],
-        aggfunc=np.average)
-    _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
-    _p.axvline(1500, color='black', linestyle=':')
-    _p.axvline(2700, color='black', linestyle='--')
-    # _p.legend([TARGET, NTargtAvg, 'qend: 1500', 'target: 2700'])
-    _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
-    _p.set_title("{}type {}, non target".format(args.title, "AF, F"))
+    for t in [F]:
+        _d4 = _d3[_d3[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TARGET, COMP, NTargtAvg],
+            aggfunc=np.average)
+        _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
+        _p.axvline(4200, color='black', linestyle='--')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(3000, color='black', linestyle='-.')
+        _p.legend(list(_d4.columns) + ['1qend: 1500', '2qend: 3000', 'target: 4200'])
+        _p.set_title("{}type {}, non target".format(args.title, t))
+        pp.draw()
+
+    for t in [AF]:
+        _d4 = _d3[_d3[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TARGET, NTargtAvg],
+            aggfunc=np.average)
+        _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
+        _p.axvline(4200, color='black', linestyle='--')
+        _p.legend(list(_d4.columns) + ['target: 4200'])
+        _p.set_title("{}type {}, non target".format(args.title, t))
+        pp.draw()
+
+
 
     # when we done drawing graphs
     pp.show()
