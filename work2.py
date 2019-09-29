@@ -178,50 +178,43 @@ def plot_part_trial(data2, _p, _t):
     p.legend(['Target', 'cutoff {}'.format(
         data2.loc[_p].loc[_t].TOUCH_FIXED.values[0]), 'qend: 1500', 'target: 2700'])
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbosity", action="count", default=0, help="increase output verbosity")
-    parser.add_argument("indata", type=str, help="input data excel file")
-    parser.add_argument("intouch", type=str, help="input touch data excel file")
-    parser.add_argument("-o", dest="outdata", type=str, help="output data excel file")
-    parser.add_argument("-t", dest="title", type=str, help="graph title prefix")
-    args = parser.parse_args()
-
-    data = get_data_raw(args.indata)
-    touch_data = get_message_report_ofs(args.intouch)
-
-    # merge data with touch point
+def process_data(data, touch_data, export) -> pd.DataFrame:
+    
     data_with_touch = pd.merge(data.set_index([PART, TRIAL]),
                                touch_data,
-                               on=[PART, TRIAL]).\
-        reset_index([PART, TRIAL]).\
-        set_index([PART, TRIAL, TYPE])
+                               on=[PART, TRIAL])
 
     # if we want to plot target for specific participant and trial
-    # plot_part_trial(data_with_touch, 411, 5)
+    # plot_part_trial(data_with_touch.set_index(PART, TRIAL, TYPE), 411, 5)
 
+    _d = data_with_touch
 
-    # move type from index to column
-    _d = data_with_touch.reset_index(TYPE)
-
-    # assign two new columns of average of fillers and average of non target
     _d = _d.assign(**{
-        NTargtAvg: (_d[COMP]+_d[FILL1]+_d[FILL2]) / 3,
-        FILLAvg: (_d[FILL1]+_d[FILL2])/2
+        NTargtAvg: (_d[COMP] + _d[FILL1]+_d[FILL2]) / 3,
+        FILLAvg:   (_d[FILL1] + _d[FILL2]) / 2
     })
 
-    # pad from touch point
+    # pad Target column from touch point
     _d.loc[_d[TIME] >= _d['TOUCH_FIXED'], TARGET] = 10
     
-    if args.outdata is not None:
-        _d.to_excel(args.outdata)
+    if export is not None:
+        _d.to_excel(export)
 
+    return _d
+
+def plot_graphs(data, title_prefix):
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
-    _d2 = _d[(_d[TIME] >= 200) & (_d[TIME] <= 3500)]
+    _d2 = data[(data[TIME] >= 200) & (data[TIME] <= 3500)]
     # chop time for  AF, F  (from 200)
-    _d3 = _d[(_d[TIME] >= 200)]
+    _d3 = data[(data[TIME] >= 200)]
+
+    trial_types = data[TYPE].unique()
 
     for t in [B, D]:
+        if t not in trial_types:
+            print("trial of type {} not exists in data".format(t))
+            continue
+
         _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
                                         values=[TARGET, NTargtAvg],
                                         aggfunc=np.average)
@@ -229,26 +222,38 @@ def main():
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='--')
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
-        _p.set_title("{}type {}, non target".format(args.title, t))
+        _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
 
     for t in [A, Am, As, 'A(all)']:
         # draw A type plot
         if t == 'A(all)':
-            CondTypeA = (_d2[TYPE] == A) | (_d2[TYPE] == Am) | (_d2[TYPE] == As)
+            Aall = set([A, Am, As])
+            if Aall.intersection(set(trial_types)) != Aall:
+                print("trials of type {} not exists in data".format(Aall))
+                continue
+            cond = (_d2[TYPE] == A) | (_d2[TYPE] == Am) | (_d2[TYPE] == As)
         else:
-            CondTypeA = (_d2[TYPE] == t)
-        _d4 = _d2[CondTypeA].pivot_table(index=[TIME],
-                                         values=[TARGET, NTargtAvg],
-                                         aggfunc=np.average)
+            if t not in trial_types:
+                print("trial of type {} not exists in data".format(t))
+                continue
+            cond = (_d2[TYPE] == t)
+
+        _d4 = _d2[cond].pivot_table(index=[TIME],
+                                    values=[TARGET, NTargtAvg],
+                                    aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(2700, color='black', linestyle='--')
         _p.legend(list(_d4.columns) + ['target: 2700'])
-        _p.set_title("{}type {}, non target".format(args.title, t))
+        _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
     
 
     for t in [C, E]:
+        if t not in trial_types:
+            print("trial of type {} not exists in data".format(t))
+            continue
+
         _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
                                         values=[TARGET, COMP, FILLAvg],
                                         aggfunc=np.average)
@@ -256,10 +261,14 @@ def main():
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='--')
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
-        _p.set_title("{}type {}, filler average".format(args.title, t))
+        _p.set_title("{}type {}, filler average".format(title_prefix, t))
         pp.draw()
 
     for t in [F]:
+        if t not in trial_types:
+            print("trial of type {} not exists in data".format(t))
+            continue
+
         _d4 = _d3[_d3[TYPE] == t].pivot_table(
             index=[TIME],
             values=[TARGET, COMP, NTargtAvg],
@@ -269,10 +278,14 @@ def main():
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(3000, color='black', linestyle='-.')
         _p.legend(list(_d4.columns) + ['1qend: 1500', '2qend: 3000', 'target: 4200'])
-        _p.set_title("{}type {}, non target".format(args.title, t))
+        _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
 
     for t in [AF]:
+        if t not in trial_types:
+            print("trial of type {} not exists in data".format(t))
+            continue
+
         _d4 = _d3[_d3[TYPE] == t].pivot_table(
             index=[TIME],
             values=[TARGET, NTargtAvg],
@@ -280,15 +293,46 @@ def main():
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(4200, color='black', linestyle='--')
         _p.legend(list(_d4.columns) + ['target: 4200'])
-        _p.set_title("{}type {}, non target".format(args.title, t))
+        _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
 
 
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbosity", action="count", default=0, help="increase output verbosity")
+    parser.add_argument("-iold", dest="olddata", type=str, help="old data excel file")
+    parser.add_argument("-ioldtouch", dest="oldtouch", type=str, help="old touch data excel file")
+    parser.add_argument("-oold", dest="outold", type=str, help="output old data excel file")
+    parser.add_argument("-iyoung", dest="youngdata", type=str, help="young data excel file")
+    parser.add_argument("-iyoungtouch", dest="youngtouch", type=str, help="young touch data excel file")
+    parser.add_argument("-oyoung", dest="outyoung", type=str, help="output young data excel file")
+    parser.add_argument("-t", dest="title", type=str, help="graph title prefix")
+    args = parser.parse_args()
+
+    # if args.olddta is None or args.oldtouch is None or args.youngdata is None or args.youngtouch is None:
+
+    workset=dict()
+    if args.olddata is not None and args.oldtouch is not None:
+        data = get_data_raw(args.olddata)
+        touch_data = get_message_report_ofs(args.oldtouch)
+
+        workset['old'] = process_data(data, touch_data, args.outold)
+    
+    if args.youngdata is not None and args.youngtouch is not None:
+        data = get_data_raw(args.youngdata)
+        touch_data = get_message_report_ofs(args.youngtouch)
+
+        workset['young'] = process_data(data, touch_data, args.outyoung)
+
+    title = args.title if args.title is not None else ""
+    if 'old' in workset:
+        plot_graphs(workset['old'], title + " old ")
+    if 'young' in workset:
+        plot_graphs(workset['young'], title + " young ")
+
     # when we done drawing graphs
     pp.show()
-
-
 
 
 if __name__ == "__main__":
