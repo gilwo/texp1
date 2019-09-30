@@ -202,7 +202,7 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
 
     return _d
 
-def plot_graphs(data, title_prefix):
+def plot_graphs(data, title_prefix, outfolder):
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
     _d2 = data[(data[TIME] >= 200) & (data[TIME] <= 3500)]
     # chop time for  AF, F  (from 200)
@@ -224,6 +224,10 @@ def plot_graphs(data, title_prefix):
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
         _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
+        if outfolder is not None:
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
 
     for t in [A, Am, As, 'A(all)']:
         # draw A type plot
@@ -247,6 +251,10 @@ def plot_graphs(data, title_prefix):
         _p.legend(list(_d4.columns) + ['target: 2700'])
         _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
+        if outfolder is not None:
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
     
 
     for t in [C, E]:
@@ -263,6 +271,10 @@ def plot_graphs(data, title_prefix):
         _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
         _p.set_title("{}type {}, filler average".format(title_prefix, t))
         pp.draw()
+        if outfolder is not None:
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
 
     for t in [F]:
         if t not in trial_types:
@@ -280,6 +292,10 @@ def plot_graphs(data, title_prefix):
         _p.legend(list(_d4.columns) + ['1qend: 1500', '2qend: 3000', 'target: 4200'])
         _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
+        if outfolder is not None:
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
 
     for t in [AF]:
         if t not in trial_types:
@@ -295,7 +311,141 @@ def plot_graphs(data, title_prefix):
         _p.legend(list(_d4.columns) + ['target: 4200'])
         _p.set_title("{}type {}, non target".format(title_prefix, t))
         pp.draw()
+        if outfolder is not None:
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
 
+def plot_comparison_graphs(workset, outfolder, title_prefix):
+
+    do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x['Non Target Average'])
+    do = do.assign(TmC=lambda x: x[TARGET] - x[COMP])
+    dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x['Non Target Average'])
+    dy = dy.assign(TmC=lambda x: x[TARGET] - x[COMP])
+
+    # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
+    _do2 = do[(do[TIME] >= 200) & (do[TIME] <= 3500)]
+    _dy2 = dy[(dy[TIME] >= 200) & (dy[TIME] <= 3500)]
+    # chop time for  AF, F  (from 200)
+    _do3 = do[(do[TIME] >= 200)]
+    _dy3 = dy[(dy[TIME] >= 200)]
+
+
+    for t in [D, B]:
+        if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
+            print("trial of type {} not exists in data (young or old)".format(t))
+            continue
+
+        _o = _do2[_do2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=['TmNT'],
+            aggfunc=np.average
+        )
+        _y = _dy2[_dy2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=['TmNT'],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='-.')
+        _p.legend(['old', 'young'])
+        _p.set_title("target minus non target type {}".format(t))
+        pp.draw()
+        if outfolder is not None:
+            name = title_prefix + "target minus non target"
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+
+    for t in ['A(all)']:
+        Aall = set([A, Am, As])
+        if Aall.intersection(set(do[TYPE].unique())) != Aall or Aall.intersection(set(dy[TYPE].unique())) != Aall:
+            print("trials of type {} not exists in data".format(Aall))
+            continue
+        ocond = (_do2[TYPE] == A) | (_do2[TYPE] == Am) | (_do2[TYPE] == As)
+        ycond = (_dy2[TYPE] == A) | (_dy2[TYPE] == Am) | (_dy2[TYPE] == As)
+
+        _o = _do2[ocond].pivot_table(
+            index=[TIME],
+            values=['TmNT'],
+            aggfunc=np.average
+        )
+        _y = _dy2[ycond].pivot_table(
+            index=[TIME],
+            values=['TmNT'],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='-.')
+        _p.legend(['old', 'young'])
+        _p.set_title("target minus non target type {}".format(t))
+        pp.draw()
+        if outfolder is not None:
+            name = title_prefix + "target minus non target"
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+    
+    for t in [C, E]:
+        if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
+            print("trial of type {} not exists in data (young or old)".format(t))
+            continue
+
+        _o = _do2[_do2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=['TmC'],
+            aggfunc=np.average
+        )
+        _y = _dy2[_dy2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=['TmC'],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='-.')
+        _p.legend(['old', 'young'])
+        _p.set_title("target minus competitor type {}".format(t))
+        pp.draw()
+        if outfolder is not None:
+            name = title_prefix + "target minus competitor"
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+
+    for t in [F]:
+        if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
+            print("trial of type {} not exists in data (young or old)".format(t))
+            continue
+
+        _o = _do3[_do3[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=['TmC'],
+            aggfunc=np.average
+        )
+        _y = _dy3[_dy3[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=['TmC'],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(3000, color='black', linestyle=':')
+        _p.axvline(4200, color='black', linestyle='-.')
+        _p.legend(['old', 'young'])
+        _p.set_title("target minus competitor type {}".format(t))
+        pp.draw()
+        if outfolder is not None:
+            name = title_prefix + "target minus competitor"
+            _p2 = _p
+            _p2.figure.set_size_inches(15, 9)
+            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
 
 
 def main():
@@ -308,9 +458,8 @@ def main():
     parser.add_argument("-iyoungtouch", dest="youngtouch", type=str, help="young touch data excel file")
     parser.add_argument("-oyoung", dest="outyoung", type=str, help="output young data excel file")
     parser.add_argument("-t", dest="title", type=str, help="graph title prefix")
+    parser.add_argument("-of", dest="outfolder", type=str, help="folder for saving graphs")
     args = parser.parse_args()
-
-    # if args.olddta is None or args.oldtouch is None or args.youngdata is None or args.youngtouch is None:
 
     workset=dict()
     if args.olddata is not None and args.oldtouch is not None:
@@ -327,9 +476,14 @@ def main():
 
     title = args.title if args.title is not None else ""
     if 'old' in workset:
-        plot_graphs(workset['old'], title + " old ")
+        plot_graphs(workset['old'], title + " old ", args.outfolder)
     if 'young' in workset:
-        plot_graphs(workset['young'], title + " young ")
+        plot_graphs(workset['young'], title + " young ", args.outfolder)
+
+
+    if 'old' in workset and 'young' in workset:
+        plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
+
 
     # when we done drawing graphs
     pp.show()
