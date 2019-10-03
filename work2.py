@@ -173,10 +173,11 @@ def plot_part_trial(data2, _p, _t):
                height=10, width=20, color="red")
     p3 = p.bar(x=1500, height=10, width=20, color='magenta')
     p4 = p.bar(x=2700, height=10, width=20, color='black')
+    p.set_ylim(-1, 10)
     p.set_title("Part: {}, Trial: {}, Type: {}".format(
-        _p, _t, data2.loc[_p].loc[_t].index[0]))
+        _p, _t, data2.loc[_p].loc[_t].index[0]), fontsize=20)
     p.legend(['Target', 'cutoff {}'.format(
-        data2.loc[_p].loc[_t].TOUCH_FIXED.values[0]), 'qend: 1500', 'target: 2700'])
+        data2.loc[_p].loc[_t].TOUCH_FIXED.values[0]), 'qend: 1500', 'target: 2700'], loc='upper left')
 
 def process_data(data, touch_data, export) -> pd.DataFrame:
     
@@ -221,13 +222,13 @@ def plot_graphs(data, title_prefix, outfolder):
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='--')
-        _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
-        _p.set_title("{}type {}, non target".format(title_prefix, t))
-        pp.draw()
+        _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("{} type {}, non target".format(title_prefix, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+        pp.draw()
 
     for t in [A, Am, As, 'A(all)']:
         # draw A type plot
@@ -248,13 +249,13 @@ def plot_graphs(data, title_prefix, outfolder):
                                     aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(2700, color='black', linestyle='--')
-        _p.legend(list(_d4.columns) + ['target: 2700'])
-        _p.set_title("{}type {}, non target".format(title_prefix, t))
-        pp.draw()
+        _p.legend(list(_d4.columns) + ['target: 2700'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("{} type {}, non target".format(title_prefix, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+        pp.draw()
     
 
     for t in [C, E]:
@@ -268,8 +269,12 @@ def plot_graphs(data, title_prefix, outfolder):
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='--')
-        _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'])
-        _p.set_title("{}type {}, filler average".format(title_prefix, t))
+        _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("{} type {}, filler average".format(title_prefix, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
         pp.draw()
         if outfolder is not None:
             _p2 = _p
@@ -289,13 +294,13 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.axvline(4200, color='black', linestyle='--')
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(3000, color='black', linestyle='-.')
-        _p.legend(list(_d4.columns) + ['1qend: 1500', '2qend: 3000', 'target: 4200'])
-        _p.set_title("{}type {}, non target".format(title_prefix, t))
-        pp.draw()
+        _p.legend(list(_d4.columns) + ['1qend: 1500', '2qend: 3000', 'target: 4200'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("{} type {}, non target".format(title_prefix, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+        pp.draw()
 
     for t in [AF]:
         if t not in trial_types:
@@ -308,13 +313,13 @@ def plot_graphs(data, title_prefix, outfolder):
             aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(4200, color='black', linestyle='--')
-        _p.legend(list(_d4.columns) + ['target: 4200'])
-        _p.set_title("{}type {}, non target".format(title_prefix, t))
-        pp.draw()
+        _p.legend(list(_d4.columns) + ['target: 4200'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("{} type {}, non target".format(title_prefix, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+        pp.draw()
 
 def plot_comparison_graphs(workset, outfolder, title_prefix):
 
@@ -350,14 +355,14 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.plot(_y, color='cyan')
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='-.')
-        _p.legend(['old', 'young'])
-        _p.set_title("target minus non target type {}".format(t))
-        pp.draw()
+        _p.legend(['old', 'young'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("target minus non target type {}".format(t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             name = title_prefix + "target minus non target"
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
 
     for t in ['A(all)']:
         Aall = set([A, Am, As])
@@ -381,14 +386,14 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.plot(_y, color='cyan')
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='-.')
-        _p.legend(['old', 'young'])
-        _p.set_title("target minus non target type {}".format(t))
-        pp.draw()
+        _p.legend(['old', 'young'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("target minus non target type {}".format(t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             name = title_prefix + "target minus non target"
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
     
     for t in [C, E]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
@@ -409,14 +414,14 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.plot(_y, color='cyan')
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(2700, color='black', linestyle='-.')
-        _p.legend(['old', 'young'])
-        _p.set_title("target minus competitor type {}".format(t))
-        pp.draw()
+        _p.legend(['old', 'young'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("target minus competitor type {}".format(t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             name = title_prefix + "target minus competitor"
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
 
     for t in [F]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
@@ -438,14 +443,14 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.axvline(1500, color='black', linestyle=':')
         _p.axvline(3000, color='black', linestyle=':')
         _p.axvline(4200, color='black', linestyle='-.')
-        _p.legend(['old', 'young'])
-        _p.set_title("target minus competitor type {}".format(t))
-        pp.draw()
+        _p.legend(['old', 'young'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        _p.set_title("target minus competitor type {}".format(t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             name = title_prefix + "target minus competitor"
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
 
 
 def main():
@@ -459,6 +464,8 @@ def main():
     parser.add_argument("-oyoung", dest="outyoung", type=str, help="output young data excel file")
     parser.add_argument("-t", dest="title", type=str, help="graph title prefix")
     parser.add_argument("-of", dest="outfolder", type=str, help="folder for saving graphs")
+    parser.add_argument("-k", dest="keep", default=False, action='store_true', help="keep the grpahs onscreen")
+
     args = parser.parse_args()
 
     workset=dict()
@@ -485,8 +492,9 @@ def main():
         plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
 
 
-    # when we done drawing graphs
-    pp.show()
+    if args.keep is True:
+        # when we done drawing graphs
+        pp.show()
 
 
 if __name__ == "__main__":
