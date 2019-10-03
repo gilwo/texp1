@@ -39,10 +39,11 @@ VER        = 'Version'
 # calculated special
 FILLAvg    = "Filler Average"
 NTargtAvg  = "Non Target Average"
+TCAvg      = "Target Competitor Average"
 TARGET_COLOR='red'
 COMP_COLOR='blue'
 NTargetCOLOR='green'
-color_dict={COMP: COMP_COLOR, TARGET: TARGET_COLOR, NTargtAvg: NTargetCOLOR, FILLAvg: NTargetCOLOR}
+color_dict={COMP: COMP_COLOR, TARGET: TARGET_COLOR, NTargtAvg: NTargetCOLOR, FILLAvg: NTargetCOLOR, TCAvg: TARGET_COLOR}
 # Types
 A          = 'a'
 As         = 'as'
@@ -191,8 +192,9 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
     _d = data_with_touch
 
     _d = _d.assign(**{
-        NTargtAvg: (_d[COMP] + _d[FILL1]+_d[FILL2]) / 3,
-        FILLAvg:   (_d[FILL1] + _d[FILL2]) / 2
+        NTargtAvg: (_d[COMP] + _d[FILL1] +_d[FILL2]) / 3,
+        FILLAvg:   (_d[FILL1] + _d[FILL2]) / 2,
+        TCAvg:     (_d[TARGET] + _d[COMP]) / 2
     })
 
     # pad Target column from touch point
@@ -276,10 +278,46 @@ def plot_graphs(data, title_prefix, outfolder):
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
         pp.draw()
+
+    for t in [C]:
+        if t not in trial_types:
+            print("trial of type {} not exists in data".format(t))
+            continue
+
+        _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
+                                        values=[TARGET],
+                                        aggfunc=np.average)
+        _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='--')
+        _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        name = title_prefix + " target only"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            _p2 = _p
-            _p2.figure.set_size_inches(15, 9)
-            _p2.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
+
+    for t in [C]:
+        if t not in trial_types:
+            print("trial of type {} not exists in data".format(t))
+            continue
+
+        _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
+                                        values=[TCAvg, FILLAvg],
+                                        aggfunc=np.average)
+        _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='--')
+        _p.legend(list(_d4.columns) + ['qend: 1500', 'target: 2700'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        name = title_prefix + " target competitor avg vs filler avg"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
 
     for t in [F]:
         if t not in trial_types:
@@ -323,9 +361,9 @@ def plot_graphs(data, title_prefix, outfolder):
 
 def plot_comparison_graphs(workset, outfolder, title_prefix):
 
-    do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x['Non Target Average'])
+    do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
     do = do.assign(TmC=lambda x: x[TARGET] - x[COMP])
-    dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x['Non Target Average'])
+    dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
     dy = dy.assign(TmC=lambda x: x[TARGET] - x[COMP])
 
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
@@ -357,10 +395,10 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.axvline(2700, color='black', linestyle='-.')
         _p.legend(['old', 'young'], loc='upper left')
         _p.set_ylim(-1, 10)
-        _p.set_title("target minus non target type {}".format(t), fontsize=20)
+        name = title_prefix + "target minus non target"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            name = title_prefix + "target minus non target"
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
@@ -388,10 +426,10 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.axvline(2700, color='black', linestyle='-.')
         _p.legend(['old', 'young'], loc='upper left')
         _p.set_ylim(-1, 10)
-        _p.set_title("target minus non target type {}".format(t), fontsize=20)
+        name = title_prefix + "target minus non target"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            name = title_prefix + "target minus non target"
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
     
@@ -416,10 +454,66 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.axvline(2700, color='black', linestyle='-.')
         _p.legend(['old', 'young'], loc='upper left')
         _p.set_ylim(-1, 10)
-        _p.set_title("target minus competitor type {}".format(t), fontsize=20)
+        name = title_prefix + " target minus competitor"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            name = title_prefix + "target minus competitor"
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
+
+    for t in [C]:
+        if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
+            print("trial of type {} not exists in data (young or old)".format(t))
+            continue
+
+        _o = _do2[_do2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TARGET],
+            aggfunc=np.average
+        )
+        _y = _dy2[_dy2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TARGET],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='-.')
+        _p.legend(['old', 'young'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        name = title_prefix + " target only"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
+
+    for t in [C]:
+        if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
+            print("trial of type {} not exists in data (young or old)".format(t))
+            continue
+
+        _o = _do2[_do2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TCAvg],
+            aggfunc=np.average
+        )
+        _y = _dy2[_dy2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TCAvg],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='-.')
+        _p.legend(['old', 'young'], loc='upper left')
+        _p.set_ylim(-1, 10)
+        name = title_prefix + " target competitor avg"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
@@ -445,10 +539,10 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.axvline(4200, color='black', linestyle='-.')
         _p.legend(['old', 'young'], loc='upper left')
         _p.set_ylim(-1, 10)
-        _p.set_title("target minus competitor type {}".format(t), fontsize=20)
+        name = title_prefix + "target minus competitor"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            name = title_prefix + "target minus competitor"
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
