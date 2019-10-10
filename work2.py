@@ -549,6 +549,35 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
+    for t in [C, D, E]:
+        if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
+            print("trial of type {} not exists in data (young or old)".format(t))
+            continue
+
+        _o = _do2[_do2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TCmF],
+            aggfunc=np.average
+        )
+        _y = _dy2[_dy2[TYPE] == t].pivot_table(
+            index=[TIME],
+            values=[TCmF],
+            aggfunc=np.average
+        )
+        _p = _o.plot(color='magenta')
+        _p.plot(_y, color='cyan')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='-.')
+        _p.legend(['old', 'young'] + ['qend: 1500', 'target onset: 2700'], loc='upper left')
+        _p.set_ylim(-10, 100)
+        name = title_prefix + " target competitor minus filler"
+        _p.set_title("{} type {}".format(name, t), fontsize=20)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+        pp.draw()
+
+
     for t in [F]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
