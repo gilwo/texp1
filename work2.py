@@ -40,6 +40,9 @@ VER        = 'Version'
 FILLAvg    = "Filler Average"
 NTargtAvg  = "Non Target Average"
 TCAvg      = "Target Competitor Average"
+TmC        = "Target minus Competitor"
+TmNT       = "Target minus Non Target"
+TCmF       = "Target Competitor minus Filler"
 TARGET_COLOR='red'
 COMP_COLOR='blue'
 NTargetCOLOR='green'
@@ -210,6 +213,11 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
         NTargtAvg: (_d[COMP] + _d[FILL1] +_d[FILL2]) / 3,
         FILLAvg:   (_d[FILL1] + _d[FILL2]) / 2,
         TCAvg:     (_d[TARGET] + _d[COMP]) / 2
+    })
+    _d = _d.assign(**{
+        TmC:       (_d[TARGET] - _d[COMP]),
+        TmNT:      (_d[TARGET] + _d[NTargtAvg]),
+        TCmF:      (_d[TCAvg] - _d[FILLAvg])
     })
 
     # pad Target column from touch point
@@ -383,10 +391,12 @@ def plot_graphs(data, title_prefix, outfolder):
 
 def plot_comparison_graphs(workset, outfolder, title_prefix):
 
-    do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
-    do = do.assign(TmC=lambda x: x[TARGET] - x[COMP])
-    dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
-    dy = dy.assign(TmC=lambda x: x[TARGET] - x[COMP])
+    do = workset['old']
+    # do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
+    # do = do.assign(TmC=lambda x: x[TARGET] - x[COMP])
+    dy = workset['young']
+    # dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
+    # dy = dy.assign(TmC=lambda x: x[TARGET] - x[COMP])
 
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
     _do2 = do[(do[TIME] >= 200) & (do[TIME] <= 3500)]
@@ -403,12 +413,12 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
         _o = _do2[_do2[TYPE] == t].pivot_table(
             index=[TIME],
-            values=['TmNT'],
+            values=[TmNT],
             aggfunc=np.average
         )
         _y = _dy2[_dy2[TYPE] == t].pivot_table(
             index=[TIME],
-            values=['TmNT'],
+            values=[TmNT],
             aggfunc=np.average
         )
         _p = _o.plot(color='magenta')
@@ -434,12 +444,12 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
         _o = _do2[ocond].pivot_table(
             index=[TIME],
-            values=['TmNT'],
+            values=[TmNT],
             aggfunc=np.average
         )
         _y = _dy2[ycond].pivot_table(
             index=[TIME],
-            values=['TmNT'],
+            values=[TmNT],
             aggfunc=np.average
         )
         _p = _o.plot(color='magenta')
@@ -462,12 +472,12 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
         _o = _do2[_do2[TYPE] == t].pivot_table(
             index=[TIME],
-            values=['TmC'],
+            values=[TmC],
             aggfunc=np.average
         )
         _y = _dy2[_dy2[TYPE] == t].pivot_table(
             index=[TIME],
-            values=['TmC'],
+            values=[TmC],
             aggfunc=np.average
         )
         _p = _o.plot(color='magenta')
@@ -546,12 +556,12 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
         _o = _do3[_do3[TYPE] == t].pivot_table(
             index=[TIME],
-            values=['TmC'],
+            values=[TmC],
             aggfunc=np.average
         )
         _y = _dy3[_dy3[TYPE] == t].pivot_table(
             index=[TIME],
-            values=['TmC'],
+            values=[TmC],
             aggfunc=np.average
         )
         _p = _o.plot(color='magenta')
