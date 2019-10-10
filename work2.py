@@ -68,6 +68,10 @@ LATE_TRIM_2 = 4500 # for combined sentenced (trial type f or af)
 #pdb.set_trace()
 
 def get_data_raw(input) -> pd.DataFrame:
+    csv_input =  input.split(".")[0] + ".csv"
+    if os.path.isfile(csv_input):
+        return pd.read_csv(csv_input)
+
     data = pd.read_excel(input, sheet_name=None) # read all sheets
     if 'Sheet1' not in data:
         print("Sheet1 not found in excel sheets, geting the first sheet\n")
@@ -75,6 +79,7 @@ def get_data_raw(input) -> pd.DataFrame:
     else:
         workSet = data['Sheet1'].copy(deep=True)
 
+    workSet.to_csv(csv_input, index=False)
     return workSet
 
 
@@ -90,10 +95,17 @@ def get_data_raw(input) -> pd.DataFrame:
 # calculate ofset for TOUCH_TARGET from mimimum of stimuli (when multiple stimuli exists)
 def get_message_report_ofs(input) -> pd.DataFrame:
 
+    csv_input = input.split(".")[0] + ".csv"
+
     # input = "060919/old_message_report.xlsx"
     # input = args.input
-    _d = pd.read_excel(input, sheet_name=None)
-    _data = _d['all_trial_messages']
+
+    if os.path.isfile(csv_input):
+        _data = pd.read_csv(csv_input)
+    else:
+        _d = pd.read_excel(input, sheet_name=None)
+        _data = _d['all_trial_messages']
+        _data.to_csv(csv_input, index=False)
     
     # filter messages which are not TOUCH_TARGET nor stimuli ...
     _data2 = _data.loc[(_data['CURRENT_MSG_TEXT'] == 'TOUCH_TARGET') | (
@@ -201,7 +213,14 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
     _d.loc[_d[TIME] >= _d['TOUCH_FIXED'], TARGET] = 10
     
     if export is not None:
-        _d.to_excel(export)
+        if export.split(".")[1] == "xlsx":
+            export_csv = export.split(".")[0] + ".csv"
+            #_d.reset_index().to_excel(export)
+            _d.reset_index().to_csv(export_csv, index=False)
+        elif export.split(".")[1] == "csv":   # TODO: make this condition nicer
+            _d.reset_index().to_csv(export_csv, index=False)
+        else:
+            print("not exported to {}".format(export))
 
     return _d
 
