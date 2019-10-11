@@ -208,6 +208,14 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
 
     _d = data_with_touch
 
+    # pad Target column from touch point
+    _d.loc[_d[TIME] >= _d['TOUCH_FIXED'], TARGET] = 10
+
+    # normalized to 100
+    for c in [TARGET, COMP, FILL1, FILL2]:
+        _d[c] = _d[c] * 10
+
+    # add custom calculated columns
     _d = _d.assign(**{
         NTargtAvg: (_d[COMP] + _d[FILL1] +_d[FILL2]) / 3,
         FILLAvg:   (_d[FILL1] + _d[FILL2]) / 2,
@@ -218,13 +226,6 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
         TmNT:      (_d[TARGET] + _d[NTargtAvg]),
         TCmF:      (_d[TCAvg] - _d[FILLAvg])
     })
-
-    # pad Target column from touch point
-    _d.loc[_d[TIME] >= _d['TOUCH_FIXED'], TARGET] = 10
-    
-    # normalized to 100
-    for c in [TARGET, COMP, FILL1, FILL2]:
-        _d[c] = _d[c] * 10
 
     if export is not None:
         if export.split(".")[1] == "xlsx":
