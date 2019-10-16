@@ -635,6 +635,9 @@ def main():
 
     args = parser.parse_args()
 
+    if args.outfolder is not None and not os.path.isdir(args.outfolder):
+        os.makedirs(os.path.abspath(args.outfolder))
+
     workset=dict()
     if args.olddata is not None and args.oldtouch is not None:
         data = get_data_raw(args.olddata)
