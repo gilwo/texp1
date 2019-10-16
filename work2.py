@@ -393,6 +393,9 @@ def plot_graphs(data, title_prefix, outfolder):
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
         pp.draw()
 
+def filter_no_gaze_to_target(data: pd.DataFrame, types: List) -> pd.DataFrame:
+    return data
+
 def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     do = workset['old']
@@ -405,6 +408,8 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
     _do2 = do[(do[TIME] >= 200) & (do[TIME] <= 3500)]
     _dy2 = dy[(dy[TIME] >= 200) & (dy[TIME] <= 3500)]
+    _do2 = filter_no_gaze_to_target(_do2)
+    _dy2 = filter_no_gaze_to_target(_dy2)
     # chop time for  AF, F  (from 200)
     _do3 = do[(do[TIME] >= 200)]
     _dy3 = dy[(dy[TIME] >= 200)]
