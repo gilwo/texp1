@@ -616,6 +616,8 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
+def interactive(workset):
+    return
 
 def main():
     parser = argparse.ArgumentParser()
@@ -629,6 +631,7 @@ def main():
     parser.add_argument("-t", dest="title", type=str, help="graph title prefix")
     parser.add_argument("-of", dest="outfolder", type=str, help="folder for saving graphs")
     parser.add_argument("-k", dest="keep", default=False, action='store_true', help="keep the grpahs onscreen")
+    parser.add_argument("--interactive", dest="interactive", default=False, action='store_true', help="experimental interactive CLI")
 
     args = parser.parse_args()
 
@@ -659,6 +662,8 @@ def main():
     if args.keep is True:
         # when we done drawing graphs
         pp.show()
+    elif args.interactive:
+        interactive(workset)
 
 
 if __name__ == "__main__":
