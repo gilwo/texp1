@@ -671,3 +671,63 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def tmp(data):
+    d = data
+    condStart = (d[TIME] >= 200)
+    condStop1 = (d[TIME] <= 3500)
+    condStop2 = (d[TIME] <= 4200)
+    condTypeCombined = ((d[TYPE] == F) | (d[TYPE] == AF))
+    condNormal = condStart & condStop1 & ~condTypeCombined
+    condCombined = condStart & condStop2 & condTypeCombined
+
+    nd = d[condNormal]
+    dc = d[condCombined]
+
+    # find participants trials that are missing gaze to target
+    # reduced normal data
+    rnd = nd.pivot_table(index=[PART, TRIAL, TYPE], values=[TARGET], aggfunc=np.max)
+
+    # missing gazes reduced normal data
+    mrnd = rnd[rnd[TARGET] == 0]
+
+    # normal work set summary of trials with missing gazes per participant
+    # summary of missing gazes trials per participant on reduced normal data
+    smrnd = mrnd.pivot_table(
+        index=[PART],
+        values=[TARGET],
+        columns=[TYPE],
+        aggfunc='count',
+        # aggfunc=lambda x:  len([1 for z in x if z == 0]),  # naive count like
+        dropna=True,
+        fill_value=0)
+
+    # total of summary of missing gazes on reduced normal data - total of trials per type which counted as missing gazes
+    tsmrnd = smrnd[0:0].append(smrnd.sum().rename('Total'))
+
+    # summary 2 : show breakdown of trials for participants
+    _smrnd = smrnd.assign(**{'total per participant': smrnd.sum(axis=1)})
+    s2mrnd = _smrnd.append(_smrnd.sum().rename('Total'))
+
+    # get the list of participants and trials which we wish to ignore
+    _t = rnd.pivot_table(index=[PART, TRIAL], values=[TARGET], aggfunc=np.max)
+
+    # subtotals of trials with trial number per participant
+    s3mrnd = pd.concat([
+        d.append(d.count().rename((k, 'subtotal')))
+        for k, d in _t[_t.Target == 0].groupby(level=0)
+    ])
+
+    # ignored missing gaze trials of normal data
+    imnd = _t[_t[TARGET] == 0].reset_index().drop(TARGET, axis=1) 
+
+    # omit
+    # imnd_tuple_list = list(imnd.apply(tuple, axis=1))
+
+    # filter the data of the ignore participants and trials
+    # merge the tables and add indicate column where it contain:
+    #  'left_only' for rows that exists on left only table
+    #  'both' for rows that exists on both tables
+    _ndf = pd.merge(d, ind, on=[PART, TRIAL], how='left', indicator='Exist')
+    # we want only 'left_only' and drop the indicate column 
+    ndf = _ndf[_ndf.Exist == 'left_only'].drop('Exist', axis=1)
