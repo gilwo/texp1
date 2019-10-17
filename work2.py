@@ -393,9 +393,6 @@ def plot_graphs(data, title_prefix, outfolder):
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
         pp.draw()
 
-def filter_no_gaze_to_target(data: pd.DataFrame, types: List) -> pd.DataFrame:
-    return data
-
 def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     do = workset['old']
@@ -672,7 +669,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-def tmp(data: pd.DataFrame) -> pd.DataFrame:
+def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
     """
     filter the data according a specific set of conditions
     and return the data after filter was applied
