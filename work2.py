@@ -340,7 +340,7 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
     })
     _d = _d.assign(**{
         TmC:       (_d[TARGET] - _d[COMP]),
-        TmNT:      (_d[TARGET] + _d[NTargtAvg]),
+        TmNT:      (_d[TARGET] - _d[NTargtAvg]),
         TCmF:      (_d[TCAvg] - _d[FILLAvg])
     })
 
