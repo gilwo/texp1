@@ -27,26 +27,51 @@ import pdb
 #     return data
 
 # columns name mapping
-PART       = 'Participat'
-TRIAL      = 'Trial'
-TIME       = 'Time'
-TARGET     = 'Target'
-FILL1      = 'Filler 1'
-COMP       = 'Competitor'
-FILL2      = 'Filler 2'
-TYPE       = 'Type'
-VER        = 'Version'
+
+## PART       = 'Participat'
+## TRIAL      = 'Trial'
+## TIME       = 'Time'
+## TARGET     = 'Target'
+## FILL1      = 'Filler 1'
+## COMP       = 'Competitor'
+## FILL2      = 'Filler 2'
+## TYPE       = 'Type'
+## VER        = 'Version'
+
+_PART       = 'RECORDING_SESSION_LABEL'
+PART        = 'Participant'
+_TRIAL      = 'TRIAL_INDEX'
+TRIAL       = 'Trial'
+_TARGET     = 'AVERAGE_IA_1_SAMPLE_COUNT'
+TARGET      = 'Target'
+_FILL1      = 'AVERAGE_IA_2_SAMPLE_COUNT'
+FILL1       = 'Filler1'
+_COMP       = 'AVERAGE_IA_3_SAMPLE_COUNT'
+COMP        = 'Competitor'
+_FILL2      = 'AVERAGE_IA_4_SAMPLE_COUNT'
+FILL2       = 'Filler2'
+_TIME       = 'BIN_START_TIME'
+TIME        = 'Time'
+TYPE        = 'type'
+VERSION     = 'version'
+TARGET_WORD = 'target_word'
+
 # calculated special
-FILLAvg    = "Filler Average"
-NTargtAvg  = "Non Target Average"
-TCAvg      = "Target Competitor Average"
-TmC        = "Target minus Competitor"
-TmNT       = "Target minus Non Target"
-TCmF       = "Target Competitor minus Filler"
-TARGET_COLOR='red'
-COMP_COLOR='blue'
-NTargetCOLOR='green'
+FILLAvg    = 'Filler Average'
+NTargtAvg  = 'Non Target Average'
+TCAvg      = 'Target Competitor Average'
+TmC        = 'Target minus Competitor'
+TmNT       = 'Target minus Non Target'
+TCmF       = 'Target Competitor minus Filler'
+
+KEEP_COLUMNS = [TIME, PART, TRIAL, TYPE, VERSION, TARGET, COMP, FILL1, FILL2, TARGET_WORD,
+                FILLAvg, NTargtAvg, TCAvg, TmC, TmNT, TCmF]
+
+TARGET_COLOR  = 'red'
+COMP_COLOR    = 'blue'
+NTargetCOLOR  = 'green'
 color_dict={COMP: COMP_COLOR, TARGET: TARGET_COLOR, NTargtAvg: NTargetCOLOR, FILLAvg: NTargetCOLOR, TCAvg: TARGET_COLOR}
+
 # Types
 A          = 'a'
 As         = 'as'
@@ -72,17 +97,33 @@ LEGEND_FONT_SIZE=12
 #pdb.set_trace()
 
 def get_data_raw(input) -> pd.DataFrame:
+    workSet = None
+
     csv_input =  input.split(".")[0] + ".csv"
     if os.path.isfile(csv_input):
-        return pd.read_csv(csv_input)
+        workset = pd.read_csv(csv_input)
+    
+    if workSet == None:
+        try:
+            data = pd.read_excel(input, sheet_name=None) # read all sheets
+            if 'Sheet1' not in data:
+                print("Sheet1 not found in excel sheets, geting the first sheet\n")
+                workSet = data[list(data.keys())[0]].copy(deep=True)
+            else:
+                workSet = data['Sheet1'].copy(deep=True)
+        except Exception as e:
+            print("failed to read {} as excel file, trying as csv with tab seperator\n".format(input))
+            workSet = pd.read_csv(input, sep="\t")
 
-    data = pd.read_excel(input, sheet_name=None) # read all sheets
-    if 'Sheet1' not in data:
-        print("Sheet1 not found in excel sheets, geting the first sheet\n")
-        workSet = data[list(data.keys())[0]].copy(deep=True)
-    else:
-        workSet = data['Sheet1'].copy(deep=True)
-
+    workSet.rename(columns={
+        _PART:   PART,
+        _TRIAL:  TRIAL,
+        _TARGET: TARGET,
+        _COMP:   COMP,
+        _FILL1:  FILL1,
+        _FILL2:  FILL2,
+        _TIME:   TIME
+    }, inplace=True)
     workSet.to_csv(csv_input, index=False)
     return workSet
 
@@ -111,22 +152,27 @@ def get_message_report_ofs(input) -> pd.DataFrame:
         _data = _d['all_trial_messages']
         _data.to_csv(csv_input, index=False)
     
+    _data.rename(columns={
+        _PART:   PART,
+        _TRIAL:  TRIAL
+    }, inplace=True)
+
     # filter messages which are not TOUCH_TARGET nor stimuli ...
     _data2 = _data.loc[(_data['CURRENT_MSG_TEXT'] == 'TOUCH_TARGET') | (
         _data['CURRENT_MSG_TEXT'].str.contains('Stimuli'))]
     
     _data2[_data2['CURRENT_MSG_TEXT'].str.contains('Stimu')].pivot_table(
-        index=['RECORDING_SESSION_LABEL', 'TRIAL_INDEX'], values='CURRENT_MSG_TIME', aggfunc=min)
+        index=[PART, TRIAL], values='CURRENT_MSG_TIME', aggfunc=min)
     
     # find which trials are missing entries of stimuli touch report bundle
-    _data3 = _data2.pivot_table(index=['RECORDING_SESSION_LABEL'], values=[
-                                'CURRENT_MSG_TEXT'], columns=['TRIAL_INDEX'], aggfunc=[len])
+    _data3 = _data2.pivot_table(index=[PART], values=[
+                                'CURRENT_MSG_TEXT'], columns=[TRIAL], aggfunc=[len])
     
     # rename value from 'Stimuli: <NAME>' to just 'Stimuli'
     _data4 = _data2.replace({'Stimuli:.*': 'Stimuli'}, regex=True)
     
     # pivot table to have columns for TOUCH_TARGET and Stimuli, have min value of CURRENT_MSG_TIME as the new value
-    _data5 = _data4.pivot_table(index=['RECORDING_SESSION_LABEL', 'TRIAL_INDEX'], columns=[
+    _data5 = _data4.pivot_table(index=[PART, TRIAL], columns=[
         'CURRENT_MSG_TEXT'], values='CURRENT_MSG_TIME', aggfunc=min)
     
     # find out missing TOUCH_TARGET trials
@@ -143,9 +189,9 @@ def get_message_report_ofs(input) -> pd.DataFrame:
     # _data6[_data6['TOUCH_FIXED'] < 0]
     
     # rename only the indexs 
-    _data7 = _data6.rename_axis([PART, TRIAL])
+    # _data7 = _data6.rename_axis([PART, TRIAL])
 
-    return _data7
+    return _data6
 
 # extract pairs of start and end offsets when TARGET is at value of 10 for each trial 
 def get_10_ranges(workSet):
@@ -299,6 +345,10 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
     })
 
     _d = filter_no_gaze_to_target(_d)
+
+    for col in _d.columns:
+        if col not in KEEP_COLUMNS:
+            del _d[col]
 
     if export is not None:
         if export.split(".")[1] == "xlsx":
