@@ -58,19 +58,19 @@ TARGET_WORD = 'target_word'
 
 # calculated special
 FILLAvg    = 'Filler Average'
-NTargtAvg  = 'Non Target Average'
+NTAvg      = 'Non Target Average'
 TCAvg      = 'Target Competitor Average'
 TmC        = 'Target minus Competitor'
 TmNT       = 'Target minus Non Target'
 TCmF       = 'Target Competitor minus Filler'
 
 KEEP_COLUMNS = [TIME, PART, TRIAL, TYPE, VERSION, TARGET, COMP, FILL1, FILL2, TARGET_WORD,
-                FILLAvg, NTargtAvg, TCAvg, TmC, TmNT, TCmF]
+                FILLAvg, NTAvg, TCAvg, TmC, TmNT, TCmF]
 
 TARGET_COLOR  = 'red'
 COMP_COLOR    = 'blue'
 NTargetCOLOR  = 'green'
-color_dict={COMP: COMP_COLOR, TARGET: TARGET_COLOR, NTargtAvg: NTargetCOLOR, FILLAvg: NTargetCOLOR, TCAvg: TARGET_COLOR}
+color_dict={COMP: COMP_COLOR, TARGET: TARGET_COLOR, NTAvg: NTargetCOLOR, FILLAvg: NTargetCOLOR, TCAvg: TARGET_COLOR}
 
 # Types
 A          = 'a'
@@ -334,13 +334,13 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
 
     # add custom calculated columns
     _d = _d.assign(**{
-        NTargtAvg: (_d[COMP] + _d[FILL1] +_d[FILL2]) / 3,
+        NTAvg: (_d[COMP] + _d[FILL1] +_d[FILL2]) / 3,
         FILLAvg:   (_d[FILL1] + _d[FILL2]) / 2,
         TCAvg:     (_d[TARGET] + _d[COMP]) / 2
     })
     _d = _d.assign(**{
         TmC:       (_d[TARGET] - _d[COMP]),
-        TmNT:      (_d[TARGET] - _d[NTargtAvg]),
+        TmNT:      (_d[TARGET] - _d[NTAvg]),
         TCmF:      (_d[TCAvg] - _d[FILLAvg])
     })
 
@@ -401,7 +401,7 @@ def plot_graphs(data, title_prefix, outfolder):
             continue
 
         _d4 = _d2[_d2[TYPE] == t].pivot_table(index=[TIME],
-                                        values=[TARGET, NTargtAvg],
+                                        values=[TARGET, NTAvg],
                                         aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(1500, color='black', linestyle=':')
@@ -426,11 +426,11 @@ def plot_graphs(data, title_prefix, outfolder):
             return
 
         dg1 = d[d[PART].isin(group1)].pivot_table(index=[TIME],
-                                                  values=[TARGET, NTargtAvg],
+                                                  values=[TARGET, NTAvg],
                                                   aggfunc=np.average)
 
         dg2 = d[~d[PART].isin(group1)].pivot_table(index=[TIME],
-                                                   values=[TARGET, NTargtAvg],
+                                                   values=[TARGET, NTAvg],
                                                    aggfunc=np.average)
 
         for _d in [(dg1, 'worst hearing'), (dg2, 'better hearing')]:
@@ -463,7 +463,7 @@ def plot_graphs(data, title_prefix, outfolder):
             cond = (_d2[TYPE] == t)
 
         _d4 = _d2[cond].pivot_table(index=[TIME],
-                                    values=[TARGET, NTargtAvg],
+                                    values=[TARGET, NTAvg],
                                     aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(2700, color='black', linestyle='--')
@@ -574,7 +574,7 @@ def plot_graphs(data, title_prefix, outfolder):
 
         _d4 = _d3[_d3[TYPE] == t].pivot_table(
             index=[TIME],
-            values=[TARGET, COMP, NTargtAvg],
+            values=[TARGET, COMP, NTAvg],
             aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(4200, color='black', linestyle='--')
@@ -595,7 +595,7 @@ def plot_graphs(data, title_prefix, outfolder):
 
         _d4 = _d3[_d3[TYPE] == t].pivot_table(
             index=[TIME],
-            values=[TARGET, NTargtAvg],
+            values=[TARGET, NTAvg],
             aggfunc=np.average)
         _p = _d4.plot(color=[color_dict.get(x, "#333333") for x in _d4.columns])
         _p.axvline(4200, color='black', linestyle='--')
@@ -610,10 +610,10 @@ def plot_graphs(data, title_prefix, outfolder):
 def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     do = workset['old']
-    # do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
+    # do = workset['old'].assign(TmNT=lambda x: x[TARGET] - x[NTAvg])
     # do = do.assign(TmC=lambda x: x[TARGET] - x[COMP])
     dy = workset['young']
-    # dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x[NTargtAvg])
+    # dy = workset['young'].assign(TmNT=lambda x: x[TARGET] - x[NTAvg])
     # dy = dy.assign(TmC=lambda x: x[TARGET] - x[COMP])
 
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
