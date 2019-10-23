@@ -370,6 +370,31 @@ def plot_graphs(data, title_prefix, outfolder):
 
     trial_types = data[TYPE].unique()
 
+    # look at B and C on the same grpah - the effect of with and without competition on 
+    def B_and_C_together():
+        # green - B
+        # purple - C
+
+        _dtb = _d2[_d2[TYPE] == B].pivot_table(index=[TIME],
+                                               values=[TARGET],
+                                               aggfunc=np.average)
+        _dtc = _d2[_d2[TYPE] == C].pivot_table(index=[TIME],
+                                               values=[TARGET],
+                                               aggfunc=np.average)
+        _p = _dtb.plot(color='green')
+        _p.plot(_dtc, color='purple')
+        _p.axvline(1500, color='black', linestyle=':')
+        _p.axvline(2700, color='black', linestyle='--')
+        _p.legend(['w/o competition', 'with competition', 'qend: 1500', 'target onset: 2700'], loc='upper left', fontsize=LEGEND_FONT_SIZE)
+        _p.set_ylim(-10, 100)
+        _p.set_title("{} type {}, target".format(title_prefix, 'B and C'), fontsize=TITLE_FONT_SIZE)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, 'B C'))
+        pp.draw()
+
+    B_and_C_together()
+
     for t in [B, D]:
         if t not in trial_types:
             print("trial of type {} not exists in data".format(t))
@@ -598,6 +623,33 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
     _do3 = do[(do[TIME] >= 200)]
     _dy3 = dy[(dy[TIME] >= 200)]
 
+    def ovsy_B_and_C_together():
+        _dotb = _do2[_do2[TYPE] == B].pivot_table(index=[TIME],
+                                               values=[TARGET],
+                                               aggfunc=np.average)
+        _dotc = _do2[_do2[TYPE] == C].pivot_table(index=[TIME],
+                                               values=[TARGET],
+                                               aggfunc=np.average)
+        _dytb = _dy2[_dy2[TYPE] == B].pivot_table(index=[TIME],
+                                               values=[TARGET],
+                                               aggfunc=np.average)
+        _dytc = _dy2[_dy2[TYPE] == C].pivot_table(index=[TIME],
+                                               values=[TARGET],
+                                               aggfunc=np.average)
+        all = pd.merge(_dotb, _dotc, on=[TIME]).merge(_dytb, on=[TIME]).merge(_dytc, on=[TIME])
+        all.columns = ['old no comp', 'old comp', 'young no comp', 'young comp']
+        _p = all.plot(style=['-', ':' ,'-', ':'], color=['magenta', 'magenta', 'cyan', 'cyan'])
+        _p.axvline(1500, color='black', linestyle=':', label='qend: 1500')
+        _p.axvline(2700, color='black', linestyle='--', label='target onset: 2700')
+        _p.legend(loc='upper left', fontsize=LEGEND_FONT_SIZE)
+        _p.set_ylim(-10, 100)
+        _p.set_title("{} type {}, target".format(title_prefix, 'B and C'), fontsize=TITLE_FONT_SIZE)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, 'B C'))
+        pp.draw()
+
+    ovsy_B_and_C_together()
 
     for t in [D, B]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
