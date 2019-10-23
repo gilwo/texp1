@@ -868,6 +868,8 @@ def main():
     parser.add_argument("-of", dest="outfolder", type=str, help="folder for saving graphs")
     parser.add_argument("-k", dest="keep", default=False, action='store_true', help="keep the grpahs onscreen")
     parser.add_argument("--interactive", dest="interactive", default=False, action='store_true', help="experimental interactive CLI")
+    parser.add_argument("-ioldp", dest="olddatap", type=str, help="old data excel file preprocessed")
+    parser.add_argument("-iyoungp", dest="youngdatap", type=str, help="young data excel file preprocessed")
 
     args = parser.parse_args()
 
@@ -875,12 +877,16 @@ def main():
         os.makedirs(os.path.abspath(args.outfolder))
 
     workset=dict()
-    if args.olddata is not None and args.oldtouch is not None:
+    if args.olddatap is not None:
+        workset['old'] = pd.read_csv(args.olddatap)
+    elif args.olddata is not None and args.oldtouch is not None:
         data = get_data_raw(args.olddata)
         touch_data = get_message_report_ofs(args.oldtouch)
 
         workset['old'] = process_data(data, touch_data, args.outold)
     
+    if args.youngdatap is not None:
+        workset['young'] = pd.read_csv(args.youngdatap)
     if args.youngdata is not None and args.youngtouch is not None:
         data = get_data_raw(args.youngdata)
         touch_data = get_message_report_ofs(args.youngtouch)
