@@ -651,6 +651,31 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     ovsy_B_and_C_together()
 
+    def ovsy_diff_types(t1, t2):
+        dot1 = _do2[_do2[TYPE].isin(t1)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
+        dot2 = _do2[_do2[TYPE].isin(t2)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
+        do_diff = dot1 - dot2
+        dyt1 = _dy2[_dy2[TYPE].isin(t1)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
+        dyt2 = _dy2[_dy2[TYPE].isin(t2)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
+        dy_diff = dyt1 - dyt2
+        all = pd.merge(do_diff, dy_diff, on=[TIME])
+        all.columns=['old', 'young']
+        _p = all.plot(color=['magenta', 'cyan'])
+        _p.axvline(1500, color='black', linestyle=':', label='qend: 1500')
+        _p.axvline(2700, color='black', linestyle='--', label='target onset: 2700')
+        _p.legend(loc='upper left', fontsize=LEGEND_FONT_SIZE)
+        _p.set_ylim(-10, 100)
+        name = title_prefix + ' diff'
+        _p.set_title("{} type {}, target".format(name, ','.join(t1) + ' and ' + ','.join(t2)), fontsize=TITLE_FONT_SIZE)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {}.png".format(name, ' '.join(t1) + ' '.join(t2)))
+        pp.draw()
+
+    ovsy_diff_types([B], [A, Am, As])
+    ovsy_diff_types([D], [A, Am, As])
+    ovsy_diff_types([B], [C])
+
     for t in [B, C, D]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
