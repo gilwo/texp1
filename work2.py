@@ -389,6 +389,40 @@ def plot_graphs(data, title_prefix, outfolder):
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
         pp.draw()
 
+    def grouping_type_D():
+        t = D
+        d = _d2[_d2[TYPE] == t]
+        # participant grouping - 2 groups - comparison in type D
+        group1 = [1111, 1101, 2208, 2207, 6629, 6630, 6623] # worst hearing
+        group2 = [] # all the rest
+
+        if set(group1).intersection(set(_d2[PART].unique())) != set(group1):
+            # not the right data
+            return
+
+        dg1 = d[d[PART].isin(group1)].pivot_table(index=[TIME],
+                                                  values=[TARGET, NTargtAvg],
+                                                  aggfunc=np.average)
+
+        dg2 = d[~d[PART].isin(group1)].pivot_table(index=[TIME],
+                                                   values=[TARGET, NTargtAvg],
+                                                   aggfunc=np.average)
+
+        for _d in [(dg1, 'worst hearing'), (dg2, 'better hearing')]:
+            _p = _d[0].plot(color=[color_dict.get(x, "#333333") for x in _d[0].columns])
+            _p.axvline(1500, color='black', linestyle=':')
+            _p.axvline(2700, color='black', linestyle='--')
+            _p.legend(list(_d[0].columns) + ['qend: 1500', 'target: 2700'], loc='upper left', fontsize=LEGEND_FONT_SIZE)
+            _p.set_ylim(-10, 100)
+            name = title_prefix + _d[1]
+            _p.set_title("{} type {}, non target".format(name, t), fontsize=TITLE_FONT_SIZE)
+            _p.figure.set_size_inches(15, 9)
+            if outfolder is not None:
+                _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.draw()
+
+    grouping_type_D()
+
     for t in [A, Am, As, 'A(all)']:
         # draw A type plot
         if t == 'A(all)':
@@ -435,6 +469,38 @@ def plot_graphs(data, title_prefix, outfolder):
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
         pp.draw()
+
+    def grouping_type_C():
+        t = C
+        d = _d2[_d2[TYPE] == t]
+        # trial grouping - 2 groups - comparison in type C
+        group1 = [85, 86, 94, 101] # last trials 
+        group2 = [] # all the rest
+
+        dg1 = d[d[TRIAL].isin(group1)].pivot_table(index=[TIME],
+                                                     values=[
+                                                         TARGET, COMP, FILLAvg],
+                                                     aggfunc=np.average)
+
+        dg2 = d[~d[TRIAL].isin(group1)].pivot_table(index=[TIME],
+                                                      values=[
+                                                          TARGET, COMP, FILLAvg],
+                                                      aggfunc=np.average)
+
+        for _d in [(dg1, 'last trials group'), (dg2, 'first trials group')]:
+            _p = _d[0].plot(color=[color_dict.get(x, "#333333") for x in _d[0].columns])
+            _p.axvline(1500, color='black', linestyle=':')
+            _p.axvline(2700, color='black', linestyle='--')
+            _p.legend(list(_d[0].columns) + ['qend: 1500', 'target: 2700'], loc='upper left', fontsize=LEGEND_FONT_SIZE)
+            _p.set_ylim(-10, 100)
+            name = title_prefix + _d[1]
+            _p.set_title("{} type {}, non target".format(name, t), fontsize=TITLE_FONT_SIZE)
+            _p.figure.set_size_inches(15, 9)
+            if outfolder is not None:
+                _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.draw()
+
+    grouping_type_C()
 
     for t in [C]:
         if t not in trial_types:
