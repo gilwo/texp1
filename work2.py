@@ -651,7 +651,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     ovsy_B_and_C_together()
 
-    for t in [D, B]:
+    for t in [B, C, D]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
             continue
@@ -710,7 +710,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
     
-    for t in [C, E]:
+    for t in [B, C, E]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
             continue
@@ -738,7 +738,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
-    for t in [C]:
+    for t in [B, C]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
             continue
@@ -766,7 +766,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
-    for t in [C]:
+    for t in [B, C]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
             continue
@@ -794,7 +794,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
         pp.draw()
 
-    for t in [C, D, E]:
+    for t in [B, C, D, E]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
             continue
