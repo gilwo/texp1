@@ -448,6 +448,115 @@ def plot_graphs(data, title_prefix, outfolder):
 
     grouping_type_D()
 
+
+    def grouping_type(t, g_1, g_2, g_desc, g_1n, g_2n, value):
+        if set(g_1).intersection(set(_d2[PART].unique())) != set(g_1):
+            # print("something is wrong !!!!!")
+            # print(t, g_1, g_2, g_desc, g_1n, g_2n)
+            # print(_d2[PART].unique())
+            return
+
+        d = _d2[_d2[TYPE] == t]
+        dg1 = d[d[PART].isin(g_1)].pivot_table(index=[TIME], values=[value], aggfunc=np.average)
+        dg2 = d[d[PART].isin(g_2)].pivot_table(index=[TIME], values=[value], aggfunc=np.average)
+        dall = pd.merge(dg1, dg2, on=[TIME])
+        dall.columns = [g_1n, g_2n]
+        _p = dall.plot(color=['purple', 'green'])
+        _p.axvline(1500, color='black', linestyle=':', label='qend: 1500')
+        _p.axvline(2700, color='black', linestyle='--', label='target onset: 2700')
+        _p.legend(loc='upper left', fontsize=LEGEND_FONT_SIZE)
+        _p.set_ylim(-10, 100)
+        name = title_prefix + " grouping " + g_desc
+        _p.set_title("{} type {}, {}".format(name, t, value), fontsize=TITLE_FONT_SIZE)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {} {}.png".format(name, t, value))
+        pp.draw()
+
+
+    # g1, g2 - old
+    g1a = [615, 6635, 6636, 1111, 2208, 411, 1101, 2203, 2207, 6629, 6630, 6623]
+    g1b = [2201, 2210, 2213, 4402, 6620, 2212, 1102, 2214, 6621]
+    g1d = "worst and best better ear PTA"
+    g1x = "worst better ear PTA"
+    g1y = "best better ear PTA"
+
+    g2a = [6636, 2203, 6635, 2206, 1111, 1101, 2208, 2207, 6629, 6630, 6623]
+    g2b = [2210, 2213, 4402, 2201, 6620, 1102, 2214, 2212, 1112, 6613, 6624, 6621]
+    g2d = "worst and best avg PTA"
+    g2x = "worst avg PTA"
+    g2y = "better avg PTA"
+
+    # g3, g4 - young
+    g3a = [607, 208, 301, 604, 610, 631, 614, 618, 611]
+    g3b = [205, 410, 210, 212, 202, 601, 209, 214, 627, 603]
+    g3d = "worst and best better ear PTA"
+    g3x = g1x
+    g3y = g1y
+
+    g4a = [610, 301, 208, 614, 604, 618, 631, 611]
+    g4b = [205, 410, 212, 210, 202, 601, 627, 209, 214]
+    g4d = "worst and best avg PTA"
+    g4x = g2x
+    g4y = g2y
+
+    # g5, g6, g7 - young
+    g5a = [205, 208, 212, 606, 608, 610, 612, 616]
+    g5b = [203, 204, 614, 211, 604, 627]
+    g5d = "worst and best digit span"
+    g5x = "worst digit span"
+    g5y = "best digit span"
+
+    g6a = [205, 208, 212, 606, 608, 610, 612, 616, 301, 603, 611, 625, 631, 405, 618]
+    g6b = [209, 214, 619, 202, 602, 607, 609, 626, 210, 215, 601, 203, 204, 604, 410, 614, 211, 627]
+    g6d = "low span and high span"
+    g6x = "low span (5-6)"
+    g6y = "high span (7-9)"
+
+    g7a = [205, 208, 212, 606, 608, 610, 612, 616]
+    g7b = [210, 215, 601, 203, 204, 604, 410, 614, 211, 627]
+    g7d = "worst and best digit span WEXLER"
+    g7x = "worst digit span"
+    g7y = "best digit span"
+
+    # g8, g9, g10 - old
+    g8a = [1107, 1111, 2203, 2209, 6617, 6620, 6633, 6635, 6636]
+    g8b = [411, 615, 2204, 4402, 6621, 6629, 1101, 1102, 2201, 2206, 2212]
+    g8d = "worst and best digit span"
+    g8x = "worst digit span"
+    g8y = "best digit span"
+
+    g9a = [1107, 1111, 2203, 2209, 6617, 6620, 6633, 6635, 6636, 1112, 2207, 2208, 2210, 2213, 2214, 6601, 6613, 6623, 6624, 6628, 6630, 6632]
+    g9b = [411, 615, 2204, 4402, 6621, 6629, 1101, 1102, 2201, 2206, 2212]
+    g9d = "low span and high span"
+    g9x = "low span (5-6)"
+    g9y = "high span (7-8)" # TODO: check this value in the parenthesis
+
+    g10a = [1107, 1111, 2203, 6617, 6636, 1101, 2209, 6620, 6633, 4402]
+    g10b = [2213, 6601, 6624, 6630, 615, 6629, 2204, 6621, 1102, 2201, 2206, 2212]
+    g10d = "worst and best digit span WEXLER"
+    g10x = "worst digit span"
+    g10y = "best digit span"
+
+    g11a = [1111, 1101, 2208, 2207, 6629, 6630, 6623]
+    g11b = [2210, 2213, 4402, 2201, 6620, 1102]
+    g11d = "new worst and best"
+    g11x = "new worst"
+    g11y = "new best"
+
+    # make the tuples of 5 (a, b, d, x, y)
+    __z = ['g{}{}'.format(x, y) for x in range(1, 12) for y in ['a', 'b', 'd', 'x', 'y']]
+    tloc = locals()
+    _z = [eval(x, tloc) for x in __z]
+    bundles = [(_z[x], _z[x+1], _z[x+2], _z[x+3], _z[x+4]) for x in range(0, len(_z), 5)]
+
+    for t in [B, D, C]:
+        for g in bundles:
+            grouping_type(t, g[0], g[1], g[2], g[3], g[4], TmNT)
+            grouping_type(t, g[0], g[1], g[2], g[3], g[4], TmC)
+            grouping_type(t, g[0], g[1], g[2], g[3], g[4], TCmF)
+            grouping_type(t, g[0], g[1], g[2], g[3], g[4], TARGET)
+
     for t in [A, Am, As, 'A(all)']:
         # draw A type plot
         if t == 'A(all)':
