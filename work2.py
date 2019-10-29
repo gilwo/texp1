@@ -391,6 +391,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, 'B C'))
+            pp.close(_p.figure)
         pp.draw()
 
     B_and_C_together()
@@ -412,6 +413,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            pp.close(_p.figure)
         pp.draw()
 
     def grouping_type_D():
@@ -444,6 +446,7 @@ def plot_graphs(data, title_prefix, outfolder):
             _p.figure.set_size_inches(15, 9)
             if outfolder is not None:
                 _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+                pp.close(_p.figure)
             pp.draw()
 
     grouping_type_D()
@@ -471,6 +474,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {} {}.png".format(name, t, value))
+            pp.close(_p.figure)
         pp.draw()
 
 
@@ -582,6 +586,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            pp.close(_p.figure)
         pp.draw()
     
 
@@ -602,6 +607,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            pp.close(_p.figure)
         pp.draw()
 
     def grouping_type_C():
@@ -632,6 +638,7 @@ def plot_graphs(data, title_prefix, outfolder):
             _p.figure.set_size_inches(15, 9)
             if outfolder is not None:
                 _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+                pp.close(_p.figure)
             pp.draw()
 
     grouping_type_C()
@@ -654,6 +661,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in [C]:
@@ -674,6 +682,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in [F]:
@@ -695,6 +704,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in [AF]:
@@ -714,6 +724,7 @@ def plot_graphs(data, title_prefix, outfolder):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, t))
+            pp.close(_p.figure)
         pp.draw()
 
 def plot_comparison_graphs(workset, outfolder, title_prefix):
@@ -756,6 +767,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(title_prefix, 'B C'))
+            pp.close(_p.figure)
         pp.draw()
 
     ovsy_B_and_C_together()
@@ -779,6 +791,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, ' '.join(t1) + ' '.join(t2)))
+            pp.close(_p.figure)
         pp.draw()
 
     ovsy_diff_types([B], [A, Am, As])
@@ -811,6 +824,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in ['A(all)']:
@@ -842,6 +856,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
     
     for t in [B, C, E]:
@@ -870,6 +885,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in [B, C]:
@@ -898,6 +914,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in [B, C]:
@@ -926,6 +943,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
     for t in [B, C, D, E]:
@@ -954,6 +972,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
 
@@ -984,6 +1003,7 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
             _p.figure.savefig(outfolder + "/{} {}.png".format(name, t))
+            pp.close(_p.figure)
         pp.draw()
 
 def interactive(workset):
