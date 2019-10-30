@@ -136,6 +136,17 @@ def get_data_raw(input) -> pd.DataFrame:
 #                              (workSet.Type != 'f') &
 #                              (workSet.Type != 'af')]
 
+def fix_touch_trial_index(data):
+    for r in data.loc[data.CURRENT_MSG_TEXT.str.contains("TRIALID ")].itertuples(index=False):
+        n = int(r.CURRENT_MSG_TEXT.strip("TRIALID "))
+        if r.TRIAL_INDEX == n + 1:
+            continue
+        data.loc[(data.RECORDING_SESSION_LABEL == r.RECORDING_SESSION_LABEL) & (
+            data.TRIAL_INDEX == n), 'TRIAL_INDEX'] = n + 1
+        # print(r, n)
+    return data
+
+
 # read the message report and extract TOUCH_TARGET time stamp and stimuli timestamp,
 # calculate ofset for TOUCH_TARGET from mimimum of stimuli (when multiple stimuli exists)
 def get_message_report_ofs(input) -> pd.DataFrame:
@@ -151,6 +162,8 @@ def get_message_report_ofs(input) -> pd.DataFrame:
         _d = pd.read_excel(input, sheet_name=None)
         _data = _d['all_trial_messages']
         _data.to_csv(csv_input, index=False)
+
+    _data = fix_touch_trial_index(_data)
     
     _data.rename(columns={
         _PART:   PART,
@@ -316,6 +329,7 @@ def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
 
 def process_data(data, touch_data, export) -> pd.DataFrame:
     
+    data = data.assign(**{TRIAL: lambda x: pd.to_numeric(x['TRIAL_LABEL'].str.strip('Trial: '))})
     data_with_touch = pd.merge(data.set_index([PART, TRIAL]),
                                touch_data,
                                on=[PART, TRIAL])
