@@ -61,11 +61,12 @@ FILLAvg    = 'Filler Average'
 NTAvg      = 'Non Target Average'
 TCAvg      = 'Target Competitor Average'
 TmC        = 'Target minus Competitor'
+TmF        = 'Target minus Filler'
 TmNT       = 'Target minus Non Target'
 TCmF       = 'Target Competitor minus Filler'
 
 KEEP_COLUMNS = [TIME, PART, TRIAL, TYPE, VERSION, TARGET, COMP, FILL1, FILL2, TARGET_WORD,
-                FILLAvg, NTAvg, TCAvg, TmC, TmNT, TCmF]
+                FILLAvg, NTAvg, TCAvg, TmC, TmF, TmNT, TCmF]
 
 TARGET_COLOR  = 'red'
 COMP_COLOR    = 'blue'
@@ -354,6 +355,7 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
     })
     _d = _d.assign(**{
         TmC:       (_d[TARGET] - _d[COMP]),
+        TmF:       (_d[TARGET] - _d[FILLAvg]),
         TmNT:      (_d[TARGET] - _d[NTAvg]),
         TCmF:      (_d[TCAvg] - _d[FILLAvg])
     })
@@ -786,12 +788,16 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     ovsy_B_and_C_together()
 
-    def ovsy_diff_types(t1, t2):
-        dot1 = _do2[_do2[TYPE].isin(t1)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
-        dot2 = _do2[_do2[TYPE].isin(t2)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
+    def ovsy_diff_types(t1, v1, t2, v2, desc):
+        dot1 = _do2[_do2[TYPE].isin(t1)].pivot_table(index=[TIME], values=[v1], aggfunc=np.average)
+        dot2 = _do2[_do2[TYPE].isin(t2)].pivot_table(index=[TIME], values=[v2], aggfunc=np.average)
+        dot1.columns=['res']
+        dot2.columns=['res']
         do_diff = dot1 - dot2
-        dyt1 = _dy2[_dy2[TYPE].isin(t1)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
-        dyt2 = _dy2[_dy2[TYPE].isin(t2)].pivot_table(index=[TIME], values=[TARGET], aggfunc=np.average)
+        dyt1 = _dy2[_dy2[TYPE].isin(t1)].pivot_table(index=[TIME], values=[v1], aggfunc=np.average)
+        dyt2 = _dy2[_dy2[TYPE].isin(t2)].pivot_table(index=[TIME], values=[v2], aggfunc=np.average)
+        dyt1.columns=['res']
+        dyt2.columns=['res']
         dy_diff = dyt1 - dyt2
         all = pd.merge(do_diff, dy_diff, on=[TIME])
         all.columns=['old', 'young']
@@ -800,17 +806,47 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
         _p.axvline(2700, color='black', linestyle='--', label='target onset: 2700')
         _p.legend(loc='upper left', fontsize=LEGEND_FONT_SIZE)
         _p.set_ylim(-10, 100)
+
+        if all.min()[0] < -40 or all.min()[1] < -40:
+            _p.legend(loc='lower left', fontsize=LEGEND_FONT_SIZE)
+            _p.set_ylim(-50, 10)
+
         name = title_prefix + ' diff'
-        _p.set_title("{} type {}, target".format(name, ','.join(t1) + ' and ' + ','.join(t2)), fontsize=TITLE_FONT_SIZE)
+        _p.set_title("{} type {}, {}".format(name, ','.join(t1) + ' and ' + ','.join(t2), desc), fontsize=TITLE_FONT_SIZE)
         _p.figure.set_size_inches(15, 9)
         if outfolder is not None:
-            _p.figure.savefig(outfolder + "/{} {}.png".format(name, ' '.join(t1) + ' '.join(t2)))
+            _p.figure.savefig(outfolder + "/{} {} {}.png".format(name, ' '.join(t1) + ' '.join(t2), desc))
             pp.close(_p.figure)
         pp.draw()
 
-    ovsy_diff_types([B], [A, Am, As])
-    ovsy_diff_types([D], [A, Am, As])
-    ovsy_diff_types([B], [C])
+    ovsy_diff_types([B], TARGET, [A, Am, As], TARGET, TARGET)
+    ovsy_diff_types([D], TARGET, [A, Am, As], TARGET, TARGET)
+    ovsy_diff_types([B], TARGET, [C], TARGET, TARGET)
+    ovsy_diff_types([C], TARGET, [A], TARGET, TARGET)
+
+    ovsy_diff_types([C], TmF, [A], TmNT, "{} - {}".format(TmF, TmNT))
+
+    def ovsy_type_value_single(t, v, desc):
+        _do21 = _do2[(_do2[TIME] >= 1000) & (_do2[TIME] <= 3000)]
+        _dy21 = _dy2[(_dy2[TIME] >= 1000) & (_dy2[TIME] <= 3000)]
+        doc = _do21[_do21[TYPE].isin(t)].pivot_table(index=[TIME], values=[v], aggfunc=np.average)
+        dyc = _dy21[_dy21[TYPE].isin(t)].pivot_table(index=[TIME], values=[v], aggfunc=np.average)
+        all = pd.merge(doc, dyc, on=[TIME])
+        all.columns=['old', 'young']
+        _p = all.plot(color=['magenta', 'cyan'])
+        _p.axvline(1500, color='black', linestyle=':', label='qend: 1500')
+        _p.axvline(2700, color='black', linestyle='--', label='target onset: 2700')
+        _p.legend(loc='upper left', fontsize=LEGEND_FONT_SIZE)
+        _p.set_ylim(-10, 100)
+        name = title_prefix
+        _p.set_title("{} type {}, {}".format(name, C, desc), fontsize=TITLE_FONT_SIZE)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {} {}.png".format(name, C, desc))
+            pp.close(_p.figure)
+        pp.draw()
+
+    ovsy_type_value_single([C], COMP, 'competitor')
 
     for t in [B, C, D]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
