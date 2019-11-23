@@ -848,6 +848,36 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 
     ovsy_type_value_single([C], COMP, 'competitor')
 
+    def ovsy_type_value_sum(t, varr, low, high, desc):
+        _do21 = _do2[(_do2[TIME] >= low) & (_do2[TIME] <= high)]
+        _dy21 = _dy2[(_dy2[TIME] >= low) & (_dy2[TIME] <= high)]
+
+        foo2 = lambda l, h, s, y: [y if y is not None else x for x in range(l, h+s, s)]
+        dosum = pd.DataFrame({TIME: foo2(low, high, 20, None), '_tmp_old': foo2(low, high, 20, 0)}).set_index(TIME)
+        dysum = pd.DataFrame({TIME: foo2(low, high, 20, None), '_tmp_young': foo2(low, high, 20, 0)}).set_index(TIME)
+        for v in varr:
+            doc = _do21[_do21[TYPE].isin(t)].pivot_table(index=[TIME], values=[v], aggfunc=np.average)
+            dyc = _dy21[_dy21[TYPE].isin(t)].pivot_table(index=[TIME], values=[v], aggfunc=np.average)
+            dosum += doc.rename(columns={v: '_tmp_old'})
+            dysum += dyc.rename(columns={v: '_tmp_young'})
+        all = pd.merge(dosum, dysum, on=[TIME])
+        all.columns=['old', 'young']
+        _p = all.plot(color=['magenta', 'cyan'])
+        if low < 1500:
+            _p.axvline(1500, color='black', linestyle=':', label='qend: 1500')
+        _p.axvline(2700, color='black', linestyle='--', label='target onset: 2700')
+        _p.legend(loc='upper left', fontsize=LEGEND_FONT_SIZE)
+        _p.set_ylim(-10, 100)
+        name = title_prefix
+        _p.set_title("{} type {}, {}".format(name, C, desc), fontsize=TITLE_FONT_SIZE)
+        _p.figure.set_size_inches(15, 9)
+        if outfolder is not None:
+            _p.figure.savefig(outfolder + "/{} {} {}.png".format(name, C, desc))
+            pp.close(_p.figure)
+        pp.draw()
+
+    ovsy_type_value_sum([C], [TARGET, COMP], 1500, 2900, 'Target + Competitor')
+
     for t in [B, C, D]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
             print("trial of type {} not exists in data (young or old)".format(t))
