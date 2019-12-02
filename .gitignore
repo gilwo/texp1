@@ -1,0 +1,9 @@
+*.xlsx
+*.csv
+xlrd*
+xlsxwriter*
+XlsxWriter*
+0*
+data_analysis*
+SR*
+graph*/
