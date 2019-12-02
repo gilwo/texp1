@@ -1173,13 +1173,16 @@ def main():
 
     title = args.title if args.title is not None else ""
     if 'old' in workset:
-        plot_graphs(workset['old'], title + " old ", args.outfolder)
+        if args.outfolder is not None:
+            plot_graphs(workset['old'], title + " old ", args.outfolder)
     if 'young' in workset:
-        plot_graphs(workset['young'], title + " young ", args.outfolder)
+        if args.outfolder is not None:
+            plot_graphs(workset['young'], title + " young ", args.outfolder)
 
 
     if 'old' in workset and 'young' in workset:
-        plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
+        if args.outfolder is not None:
+            plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
         dump_look_on_target(workset, [B, C, D, E])
         find_cutoff(workset, [B, C, D, E])
 
