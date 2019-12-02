@@ -372,7 +372,7 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
             #_d.reset_index().to_excel(export)
             _d.reset_index().to_csv(export_csv, index=False)
         elif export.split(".")[1] == "csv":   # TODO: make this condition nicer
-            _d.reset_index().to_csv(export_csv, index=False)
+            _d.reset_index().to_csv(export, index=False)
         else:
             print("not exported to {}".format(export))
 
