@@ -1089,6 +1089,26 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 def interactive(workset):
     return
 
+def dump_look_on_target(ws, types):
+    res = dict()
+    writer = pd.ExcelWriter('avg_target_gaze_all_part_' + '_'.join(types) + '.xlsx')
+
+    for t in types:
+        res[t] = dict()
+        for a in ws:
+            d = ws[a]
+            res[t][a] = d[d[TYPE] == t].pivot_table(
+                index=[PART],
+                columns=[TIME],
+                values=[TARGET],
+                aggfunc=np.average,
+                fill_value=0)
+
+            res[t][a].to_excel(writer, a + '_' + t)
+
+    writer.save()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbosity", action="count", default=0, help="increase output verbosity")
@@ -1137,6 +1157,7 @@ def main():
 
     if 'old' in workset and 'young' in workset:
         plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
+        dump_look_on_target(workset, [B, C, D, E])
 
 
     if args.keep is True:
