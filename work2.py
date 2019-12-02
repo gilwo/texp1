@@ -1168,7 +1168,13 @@ def main():
         data = get_data_raw(args.youngdata)
         touch_data = get_message_report_ofs(args.youngtouch)
 
-        data = data[~data[PART].isin([206, 605, 406, 409, 201, 213, 404])]
+        data = data[data[PART].isin(
+            [404, 405, 601, 602, 603, 604,
+             606, 607, 608, 609, 610, 611,
+             612, 410, 201, 202, 203, 204,
+             205, 301, 614, 208, 618, 619,
+             213, 625, 209, 211, 626, 627,
+             631, 214, 215])]
         workset['young'] = process_data(data, touch_data, args.outyoung)
 
     title = args.title if args.title is not None else ""
