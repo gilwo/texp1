@@ -1109,6 +1109,29 @@ def dump_look_on_target(ws, types):
     writer.save()
 
 
+def find_cutoff(ws, types):
+    res = dict()
+    for t in types:
+        res[t] = dict()
+        for a in ws:
+            d = ws[a]
+            tmp = d[d[TYPE] == t].pivot_table(
+                index=[TIME],
+                values=[TARGET],
+                aggfunc=np.average)
+
+            tmp = tmp.reset_index()
+            res[t][a] = {
+                '25': tmp[tmp[TARGET] > 25][TIME].min(),
+                '50': tmp[tmp[TARGET] > 50][TIME].min(),
+                '75': tmp[tmp[TARGET] > 75][TIME].min(),
+            }
+    ret = pd.DataFrame.from_dict({(i,j): res[i][j]
+                                   for i in res.keys()
+                                   for j in res[i].keys()},
+                              orient='index')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbosity", action="count", default=0, help="increase output verbosity")
@@ -1158,6 +1181,7 @@ def main():
     if 'old' in workset and 'young' in workset:
         plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
         dump_look_on_target(workset, [B, C, D, E])
+        find_cutoff(workset, [B, C, D, E])
 
 
     if args.keep is True:
