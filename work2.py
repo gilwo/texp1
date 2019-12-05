@@ -1089,9 +1089,11 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 def interactive(workset):
     return
 
-def dump_look_on_target(ws, types, outfolder):
+def dump_look_on_target(ws, types, outfolder, title):
     res = dict()
-    writer = pd.ExcelWriter(outfolder + '/avg_target_gaze_all_part_' + '_'.join(types) + '.xlsx')
+    if outfolder is None or outfolder == "":
+        outfolder = "."
+    writer = pd.ExcelWriter("{}/{}.avg_target_gaze_all_part_{}.xlsx".format(outfolder, title, '_'.join(types)))
 
     for t in types:
         res[t] = dict()
@@ -1109,8 +1111,10 @@ def dump_look_on_target(ws, types, outfolder):
     writer.save()
 
 
-def find_cutoff(ws, types, outfolder):
+def find_cutoff(ws, types, outfolder, title):
     res = dict()
+    if outfolder is None or outfolder == "":
+        outfolder = "."
 #writer = pd.ExcelWriter('avg_target_gaze_all_part_' + '_'.join(types) + '.xlsx')
     for t in types:
         res[t] = dict()
@@ -1131,7 +1135,7 @@ def find_cutoff(ws, types, outfolder):
                                    for i in res.keys()
                                    for j in res[i].keys()},
                               orient='index')
-    ret.to_csv("{}/target_cutoff_types_{}.csv".format(outfolder, '_'.join(types)))
+    ret.to_csv("{}/{}.target_cutoff_types_{}.csv".format(outfolder, title, '_'.join(types)))
 
 
 def main():
@@ -1191,8 +1195,8 @@ def main():
     if 'old' in workset and 'young' in workset:
         if args.outfolder is not None:
             plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
-            dump_look_on_target(workset, [B, C, D, E], args.outfolder)
-            find_cutoff(workset, [B, C, D, E], args.outfolder)
+        dump_look_on_target(workset, [B, C, D, E], args.outfolder, title)
+        find_cutoff(workset, [B, C, D, E], args.outfolder, title)
 
 
     if args.keep is True:
