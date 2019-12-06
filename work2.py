@@ -1178,13 +1178,15 @@ def main():
         workset['young'] = process_data(data, touch_data, args.outyoung)
 
     if 'young' in workset:
-        workset['young'] = workset['young'][workset['young'][PART].isin(
-            [404, 405, 601, 602, 603, 604,
-             606, 607, 608, 609, 610, 611,
-             612, 410, 202, 203, 204, 205,
-             301, 614, 208, 618, 619, 213,
-             625, 209, 211, 626, 627, 631,
-             214, 215, 206])]
+        filt_list = [202, 203, 204, 205, 208, 209,
+                     210, 211, 212, 214, 215, 301,
+                     404, 410, 601, 602, 603, 604,
+                     606, 607, 608, 609, 610, 611,
+                     612, 614, 616, 618, 619, 625,
+                     626, 627, 631]
+        workset['young'] = workset['young'][
+            workset['young'][PART].isin(filt_list)
+        ]
 
     title = args.title if args.title is not None else ""
     if 'old' in workset:
