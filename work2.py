@@ -1089,11 +1089,12 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 def interactive(workset):
     return
 
-def dump_look_on_target(ws, types, outfolder, title):
+def dump_look_on_value(ws, types, value, outfolder, title):
     res = dict()
     if outfolder is None or outfolder == "":
         outfolder = "."
-    writer = pd.ExcelWriter("{}/{}.avg_target_gaze_all_part_{}.xlsx".format(outfolder, title, '_'.join(types)))
+    writer = pd.ExcelWriter("{}/{}.avg_target_gaze_all_part_{}_{}.xlsx".format(
+        outfolder, title, '_'.join(types), value))
 
     for t in types:
         res[t] = dict()
@@ -1102,7 +1103,7 @@ def dump_look_on_target(ws, types, outfolder, title):
             res[t][a] = d[d[TYPE] == t].pivot_table(
                 index=[PART],
                 columns=[TIME],
-                values=[TARGET],
+                values=[value],
                 aggfunc=np.average,
                 fill_value=0)
 
@@ -1197,7 +1198,10 @@ def main():
     if 'old' in workset and 'young' in workset:
         if args.outfolder is not None:
             plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
-        dump_look_on_target(workset, [B, C, D, E], args.outfolder, title)
+        dump_look_on_value(workset, [B, C, D, E], TARGET, args.outfolder, title)
+        dump_look_on_value(workset, [B, C, D, E], COMP, args.outfolder, title)
+        dump_look_on_value(workset, [B, C, D, E], FILL1, args.outfolder, title)
+        dump_look_on_value(workset, [B, C, D, E], FILL2, args.outfolder, title)
         find_cutoff(workset, [B, C, D, E], args.outfolder, title)
 
 
