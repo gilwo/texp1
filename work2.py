@@ -1093,8 +1093,8 @@ def dump_look_on_value(ws, types, value, outfolder, title):
     res = dict()
     if outfolder is None or outfolder == "":
         outfolder = "."
-    writer = pd.ExcelWriter("{}/{}.avg_target_gaze_all_part_{}_{}.xlsx".format(
-        outfolder, title, '_'.join(types), value))
+    writer = pd.ExcelWriter("{}/{}.avg_{}_gaze_all_part_{}.xlsx".format(
+        outfolder, title, value, '_'.join(types)))
 
     for t in types:
         res[t] = dict()
