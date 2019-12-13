@@ -1178,6 +1178,7 @@ def main():
         workset['young'] = process_data(data, touch_data, args.outyoung)
 
     if 'young' in workset:
+        workset['young_original'] = workset['young'].copy(deep=True)
         filt_list = [202, 203, 204, 205, 208, 209,
                      210, 211, 212, 214, 215, 301,
                      404, 410, 601, 602, 603, 604,
@@ -1200,6 +1201,7 @@ def main():
     if 'old' in workset and 'young' in workset:
         if args.outfolder is not None:
             plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
+        workset['young'] = workset['young_original']
         dump_look_on_value(workset, [B, C, D, E], TARGET, args.outfolder, title)
         dump_look_on_value(workset, [B, C, D, E], COMP, args.outfolder, title)
         dump_look_on_value(workset, [B, C, D, E], FILL1, args.outfolder, title)
