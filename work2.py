@@ -1089,6 +1089,38 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
 def interactive(workset):
     return
 
+def dump_look_on_value_window_sum(ws, types, values, windows, outfolder, title):
+    res = dict()
+    if outfolder is None or outfolder == "":
+        outfolder = "."
+
+    _df = dict()
+    for a in ws:
+        _df[a] = None
+        d = ws[a]
+        for t in types:
+            d1 = d[d[TYPE] == t].pivot_table(
+                index=[PART],
+                columns=[TIME],
+                values=values,
+                aggfunc=np.average,
+                fill_value=0)
+
+            for win in windows:
+                for v in values:
+                    _name = f'{t}:{win[0]}:{win[1]}:{v}'
+                    _tmp = d1[v].iloc[:, win[0]//20:win[1]//20].sum(axis=1)
+                    if _df[a] is None:
+                        _df[a] = pd.concat([_tmp], axis=1, keys=[_name])
+                    else:
+                        _df[a][_name] = _tmp
+
+    out = pd.concat([_df['young'], _df['old']], axis=0, keys=['young', 'old']).reset_index(level=1)
+    out.to_excel(f"{outfolder}/{title}.sum_windows_avg_{'_'.join(values)}_gaze_all_part_{'_'.join(types)}.xlsx")
+    
+    # return out
+
+
 def dump_look_on_value(ws, types, value, outfolder, title):
     res = dict()
     if outfolder is None or outfolder == "":
@@ -1207,6 +1239,19 @@ def main():
         dump_look_on_value(workset, [B, C, D, E], FILL1, args.outfolder, title)
         dump_look_on_value(workset, [B, C, D, E], FILL2, args.outfolder, title)
         find_cutoff(workset, [B, C, D, E], args.outfolder, title)
+
+        dump_look_on_value_window_sum(workset,
+                                      [B, C],
+                                      [TARGET, COMP, FILL1, FILL2],
+                                      [
+                                          (1000, 1680),
+                                          (1700, 2880),
+                                          (2900, 3480),
+                                          (1700, 2680),
+                                      ],
+                                      args.outfolder,
+                                      title
+                                      )
 
 
     if args.keep is True:
