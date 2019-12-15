@@ -1217,8 +1217,16 @@ def main():
                      606, 607, 608, 609, 610, 611,
                      612, 614, 616, 618, 619, 625,
                      626, 627, 631]
+        filt_list = [ 202, 204, 205, 206, 208, 209, 211, 212, 214, 215, 301, 404, 410, 601, 602, 603, 604, 606, 607, 608, 609, 610, 611, 612, 614, 618, 619, 625, 626, 627, 411, 615, 1101, 1102, 1107, 1111, 1112, 2201, 2203, 2204, 2206, 2207, 2208, 2209, 2210, 2212, 2213, 2214, 4402, 6601, 6613, 6617, 6620, 6623, 6624, 6628, 6630, 6633, 6635, 6636]
         workset['young'] = workset['young'][
             workset['young'][PART].isin(filt_list)
+        ]
+
+    if 'old' in workset:
+        workset['old_original'] = workset['old'].copy(deep=True)
+        filt_list = [ 202, 204, 205, 206, 208, 209, 211, 212, 214, 215, 301, 404, 410, 601, 602, 603, 604, 606, 607, 608, 609, 610, 611, 612, 614, 618, 619, 625, 626, 627, 411, 615, 1101, 1102, 1107, 1111, 1112, 2201, 2203, 2204, 2206, 2207, 2208, 2209, 2210, 2212, 2213, 2214, 4402, 6601, 6613, 6617, 6620, 6623, 6624, 6628, 6630, 6633, 6635, 6636]
+        workset['old'] = workset['old'][
+            workset['old'][PART].isin(filt_list)
         ]
 
     title = args.title if args.title is not None else ""
@@ -1234,6 +1242,7 @@ def main():
         if args.outfolder is not None:
             plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
         workset['young'] = workset['young_original']
+        workset['old'] = workset['old_original']
         dump_look_on_value(workset, [B, C, D, E], TARGET, args.outfolder, title)
         dump_look_on_value(workset, [B, C, D, E], COMP, args.outfolder, title)
         dump_look_on_value(workset, [B, C, D, E], FILL1, args.outfolder, title)
