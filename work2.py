@@ -85,7 +85,7 @@ E          = 'e'
 F          = 'f'
 P          = 'p'
 # cut off times
-EARLY_TRIM = 200
+EARLY_TRIM = 1000
 TARGET_WORD_TIME = 2700
 LATE_TRIM_1 = 3500 # for normal sentences
 LATE_TRIM_2 = 4500 # for combined sentenced (trial type f or af)
@@ -264,8 +264,8 @@ def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
     and return the data after filter was applied
     """
     d = data
-    condStart = (d[TIME] >= 200)
-    condStop1 = (d[TIME] <= 3500)
+    condStart = (d[TIME] >= EARLY_TRIM)
+    condStop1 = (d[TIME] <= LATE_TRIM_1)
     condStop2 = (d[TIME] <= 4200)
     condTypeCombined = ((d[TYPE] == F) | (d[TYPE] == AF))
     condNormal = condStart & condStop1 & ~condTypeCombined
@@ -380,9 +380,9 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
 
 def plot_graphs(data, title_prefix, outfolder):
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
-    _d2 = data[(data[TIME] >= 200) & (data[TIME] <= 3500)]
+    _d2 = data[(data[TIME] >= EARLY_TRIM) & (data[TIME] <= LATE_TRIM_1)]
     # chop time for  AF, F  (from 200)
-    _d3 = data[(data[TIME] >= 200)]
+    _d3 = data[(data[TIME] >= EARLY_TRIM)]
 
     trial_types = data[TYPE].unique()
 
@@ -753,11 +753,11 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
     # dy = dy.assign(TmC=lambda x: x[TARGET] - x[COMP])
 
     # chop time for  A(A, Am, As), B, C, D, E  (from 200 to 3500)
-    _do2 = do[(do[TIME] >= 200) & (do[TIME] <= 3500)]
-    _dy2 = dy[(dy[TIME] >= 200) & (dy[TIME] <= 3500)]
+    _do2 = do[(do[TIME] >= EARLY_TRIM) & (do[TIME] <= LATE_TRIM_1)]
+    _dy2 = dy[(dy[TIME] >= EARLY_TRIM) & (dy[TIME] <= LATE_TRIM_1)]
     # chop time for  AF, F  (from 200)
-    _do3 = do[(do[TIME] >= 200)]
-    _dy3 = dy[(dy[TIME] >= 200)]
+    _do3 = do[(do[TIME] >= EARLY_TRIM)]
+    _dy3 = dy[(dy[TIME] >= EARLY_TRIM)]
 
     def ovsy_B_and_C_together():
         _dotb = _do2[_do2[TYPE] == B].pivot_table(index=[TIME],
@@ -876,7 +876,8 @@ def plot_comparison_graphs(workset, outfolder, title_prefix):
             pp.close(_p.figure)
         pp.draw()
 
-    ovsy_type_value_sum([C], [TARGET, COMP], 1500, 2900, 'Target + Competitor')
+    ovsy_type_value_sum([C], [TARGET, COMP], 1500, 2900, 'Target + Competitor 1500-2900')
+    ovsy_type_value_sum([C], [TARGET, COMP], EARLY_TRIM, LATE_TRIM_1, 'Target + Competitor 1000-3500')
 
     for t in [B, C, D]:
         if t not in do[TYPE].unique() or t not in dy[TYPE].unique():
