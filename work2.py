@@ -258,7 +258,7 @@ def plot_part_trial(data2, _p, _t):
         fontsize=LEGEND_FONT_SIZE)
 
 
-def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
+def filter_no_gaze_to_target(data: pd.DataFrame, outname: str = None) -> pd.DataFrame:
     """
     filter the data according a specific set of conditions
     and return the data after filter was applied
@@ -274,6 +274,7 @@ def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
     nd = d[condNormal]
     cd = d[condCombined]
 
+    extra_name = 'normal'
     for _d in [nd, cd] :
 
         # find participants trials that are missing gaze to target
@@ -296,10 +297,14 @@ def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
 
         # total of summary of missing gazes on reduced normal data - total of trials per type which counted as missing gazes
         tsmr_d = smr_d[0:0].append(smr_d.sum().rename('Total'))
+        if outname is not None:
+            tsmr_d.to_csv(f'{outname}_missing_gaze_total_{extra_name}.csv', index=True)
 
         # summary 2 : show breakdown of trials for participants
         _smr_d = smr_d.assign(**{'total per participant': smr_d.sum(axis=1)})
         s2mr_d = _smr_d.append(_smr_d.sum().rename('Total'))
+        if outname is not None:
+            s2mr_d.to_csv(f'{outname}_missing_gaze_total_breakdown_{extra_name}.csv', index=True)
 
         # get the list of participants and trials which we wish to ignore
         _t = r_d.pivot_table(index=[PART, TRIAL], values=[TARGET], aggfunc=np.max)
@@ -309,6 +314,9 @@ def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
             d.append(d.count().rename((k, 'subtotal')))
             for k, d in _t[_t[TARGET] == 0].groupby(level=0)
         ])
+
+        if outname is not None:
+            s3mr_d.to_csv(f'{outname}_missing_gaze_subtotals_{extra_name}.csv', index=True)
 
         # ignored missing gaze trials of normal data
         im_d = _t[_t[TARGET] == 0].reset_index().drop(TARGET, axis=1)
@@ -325,10 +333,11 @@ def filter_no_gaze_to_target(data: pd.DataFrame) -> pd.DataFrame:
         f_d = _f_d[_f_d.Exist == 'left_only'].drop('Exist', axis=1)
 
         d = f_d
+        extra_name = 'combined'
 
     return d
 
-def process_data(data, touch_data, export) -> pd.DataFrame:
+def process_data(data, touch_data, export, which) -> pd.DataFrame:
     
     data = data.assign(**{TRIAL: lambda x: pd.to_numeric(x['TRIAL_LABEL'].str.strip('Trial: '))})
     data_with_touch = pd.merge(data.set_index([PART, TRIAL]),
@@ -360,7 +369,7 @@ def process_data(data, touch_data, export) -> pd.DataFrame:
         TCmF:      (_d[TCAvg] - _d[FILLAvg])
     })
 
-    _d = filter_no_gaze_to_target(_d)
+    _d = filter_no_gaze_to_target(_d, which)
 
     for col in _d.columns:
         if col not in KEEP_COLUMNS:
@@ -1200,7 +1209,7 @@ def main():
         data = get_data_raw(args.olddata)
         touch_data = get_message_report_ofs(args.oldtouch)
 
-        workset['old'] = process_data(data, touch_data, args.outold)
+        workset['old'] = process_data(data, touch_data, args.outold, 'old')
     
     if args.youngdatap is not None:
         workset['young'] = pd.read_csv(args.youngdatap)
@@ -1208,7 +1217,7 @@ def main():
         data = get_data_raw(args.youngdata)
         touch_data = get_message_report_ofs(args.youngtouch)
 
-        workset['young'] = process_data(data, touch_data, args.outyoung)
+        workset['young'] = process_data(data, touch_data, args.outyoung, 'young')
 
     if 'young' in workset:
         workset['young_original'] = workset['young'].copy(deep=True)
