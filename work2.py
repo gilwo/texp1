@@ -1251,6 +1251,20 @@ def main():
     if 'old' in workset and 'young' in workset:
         if args.outfolder is not None:
             plot_comparison_graphs(workset, args.outfolder, title + " ovsy ")
+
+        dump_look_on_value_window_sum(workset,
+                                      [A, B, C],
+                                      [TARGET, COMP, FILL1, FILL2],
+                                      [
+                                          (1000, 1680),
+                                          (1700, 2880),
+                                          (2900, 3180),
+                                          (3200, 3480),
+                                      ],
+                                      args.outfolder,
+                                      title + '_filtered_'
+                                      )
+
         workset['young'] = workset['young_original']
         workset['old'] = workset['old_original']
         dump_look_on_value(workset, [B, C, D, E], TARGET, args.outfolder, title)
@@ -1260,13 +1274,13 @@ def main():
         find_cutoff(workset, [B, C, D, E], args.outfolder, title)
 
         dump_look_on_value_window_sum(workset,
-                                      [B, C],
+                                      [A, B, C],
                                       [TARGET, COMP, FILL1, FILL2],
                                       [
                                           (1000, 1680),
                                           (1700, 2880),
-                                          (2900, 3480),
-                                          (1700, 2680),
+                                          (2900, 3180),
+                                          (3200, 3480),
                                       ],
                                       args.outfolder,
                                       title
